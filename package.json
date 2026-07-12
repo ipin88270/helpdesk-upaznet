@@ -1,0 +1,9 @@
+{
+  "name": "upaznet-helpdesk",
+  "version": "1.0.0",
+  "description": "Upaznet Helpdesk Intelligent Assistant",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  }
+}

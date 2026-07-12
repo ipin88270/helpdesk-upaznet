@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/analyze_groq\\.php", "dest": "/api/analyze_groq" },
+    { "src": "/api/ssh",            "dest": "/api/ssh" },
+    { "src": "/diag/download",      "dest": "/api/diag/download" },
+    { "src": "/diag/log",           "dest": "/api/diag/log" },
+    { "src": "/diag/logs",          "dest": "/api/diag/logs" },
+    { "src": "/(.*)",               "dest": "/index.html" }
+  ]
+}

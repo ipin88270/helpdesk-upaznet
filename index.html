@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upaznet Helpdesk Assistant - Real AI Analyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --color-slate-50: var(--th-slate-50);
+            --color-slate-100: var(--th-slate-100);
+            --color-slate-200: var(--th-slate-200);
+            --color-slate-300: var(--th-slate-300);
+            --color-slate-400: var(--th-slate-400);
+            --color-slate-500: var(--th-slate-500);
+            --color-slate-600: var(--th-slate-600);
+            --color-slate-700: var(--th-slate-700);
+            --color-slate-800: var(--th-slate-800);
+            --color-slate-900: var(--th-slate-900);
+            --color-slate-950: var(--th-slate-950);
+            --font-sans: 'Outfit', sans-serif;
+        }
+    </style>
+
+    <style>
+        /* Base Dynamic Variables for Dark Mode (Midnight Glass) */
+        :root,
+        [data-theme="dark"] {
+            --th-slate-50: #f8fafc;
+            --th-slate-100: #f1f5f9;
+            --th-slate-200: #e2e8f0;
+            --th-slate-300: #cbd5e1;
+            --th-slate-400: #94a3b8;
+            --th-slate-500: #64748b;
+            --th-slate-600: #475569;
+            --th-slate-700: #1e293b;
+            --th-slate-800: #0f172a;
+            --th-slate-900: #020617;
+            --th-slate-950: #000000;
+        }
+
+        /* Base Dynamic Variables for Light Mode — Navy Professional */
+        [data-theme="light"] {
+            --th-slate-950: #ffffff;
+            --th-slate-900: #eef2f7;
+            --th-slate-800: #ffffff;
+            --th-slate-700: #dde3ed;
+            --th-slate-600: #c4cedf;
+            --th-slate-500: #8898aa;
+            --th-slate-400: #546e8a;
+            --th-slate-300: #2d4a6e;
+            --th-slate-200: #1a3355;
+            --th-slate-100: #0d2149;
+            --th-slate-50:  #081730;
+        }
+
+        html,
+        body {
+            background-color: var(--th-slate-900);
+            color: var(--th-slate-100);
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Universal smooth transitions for a premium feel */
+        input,
+        button,
+        div.bg-slate-800 {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        /* ── Light-mode overrides ── */
+        [data-theme="light"] body { background-color: #eef2f7; }
+
+        /* Cards / panels → white */
+        [data-theme="light"] .bg-slate-800\/60,
+        [data-theme="light"] .bg-slate-800\/80,
+        [data-theme="light"] .bg-slate-800 {
+            background-color: #ffffff !important;
+            border-color: #dde3ed !important;
+            box-shadow: 0 2px 12px rgba(13,33,73,0.07) !important;
+        }
+
+        /* Input wells → pale blue-white */
+        [data-theme="light"] .bg-slate-950,
+        [data-theme="light"] .bg-slate-950\/60 {
+            background-color: #f4f7fb !important;
+            border-color: #c4cedf !important;
+            color: #0d2149 !important;
+        }
+
+        /* Preview / AI input panels → stay dark navy (matches photo) */
+        [data-theme="light"] #previewArea,
+        [data-theme="light"] #aiInput,
+        [data-theme="light"] #aiOutputBox {
+            background-color: #0d2149 !important;
+            border-color: #1a3355 !important;
+            color: #e2ecf8 !important;
+        }
+
+        /* Template buttons */
+        [data-theme="light"] .bg-slate-950\/60 {
+            background-color: #f4f7fb !important;
+            border-color: #dde3ed !important;
+        }
+        [data-theme="light"] .bg-slate-950\/60:hover,
+        [data-theme="light"] .hover\:bg-slate-700\/50:hover {
+            background-color: #e8eef6 !important;
+        }
+
+        /* Append / opsi buttons */
+        [data-theme="light"] .bg-slate-900 {
+            background-color: #f4f7fb !important;
+            border-color: #dde3ed !important;
+            color: #0d2149 !important;
+        }
+
+        /* Inner header strip */
+        [data-theme="light"] .bg-slate-950\/50 {
+            background-color: #f4f7fb !important;
+            border-color: #dde3ed !important;
+        }
+
+        /* Section heading text */
+        [data-theme="light"] .text-slate-300 { color: #2d4a6e !important; }
+        [data-theme="light"] .text-slate-400 { color: #546e8a !important; }
+
+        /* Hardcoded text-white → navy */
+        [data-theme="light"] .text-white { color: #0d2149 !important; }
+
+        /* Diagnostics label */
+        [data-theme="light"] #diagSpeedResult { color: #2d4a6e; }
+
+        /* KB suggestions dropdown */
+        [data-theme="light"] #kbSuggestions {
+            background-color: #ffffff !important;
+            border-color: #dde3ed !important;
+            color: #0d2149 !important;
+        }
+
+        /* Utility / slate-700 buttons → navy */
+        [data-theme="light"] .bg-slate-700,
+        [data-theme="light"] .hover\:bg-slate-600:hover {
+            background-color: #1a3355 !important;
+            color: #ffffff !important;
+        }
+
+        /* Light scrollbar */
+        [data-theme="light"] .custom-scrollbar::-webkit-scrollbar-track { background: #dde3ed; }
+        [data-theme="light"] .custom-scrollbar::-webkit-scrollbar-thumb { background: #8898aa; }
+
+        /* Custom scrollbar matching theme */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: var(--th-slate-900);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--th-slate-700);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--th-slate-500);
+        }
+
+        #themeToggle {
+            background: transparent;
+            border: 1px solid var(--th-slate-700);
+            color: inherit;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #themeToggle:hover {
+            background: var(--th-slate-800);
+        }
+    </style>
+
+    <script>
+        // Initialize theme early to avoid flash
+        (function () {
+            try {
+                const saved = localStorage.getItem('upaz_theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', saved);
+            } catch (e) { }
+        })();
+
+        // Theme toggle handler — called from button onclick
+        function toggleTheme() {
+            try {
+                const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('upaz_theme', next);
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = next === 'dark' ? 'fa-regular fa-moon' : 'fa-regular fa-sun';
+            } catch (e) { console.error(e); }
+        }
+
+        // Set icon after DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = current === 'dark' ? 'fa-regular fa-moon' : 'fa-regular fa-sun';
+            } catch (e) { }
+        });
+    </script>
+</head>
+
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 font-sans selection:bg-cyan-500 selection:text-slate-950">
+
+    <header
+        class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center bg-slate-800/60 backdrop-blur-md border border-slate-700/50 p-5 rounded-2xl shadow-2xl gap-4">
+        <!-- Logo + Title -->
+        <div class="flex items-center gap-3">
+            <div class="bg-cyan-500 text-slate-950 p-2 rounded-lg font-black text-xl tracking-wider">UPAZ</div>
+            <div>
+                <h1 class="text-xl font-extrabold text-white tracking-wide">Helpdesk Intelligent Assistant</h1>
+                <p class="text-xs text-slate-400">SOP Chat Automation & LLM Groq Customer Chat Analyzer</p>
+            </div>
+        </div>
+        <!-- Status bar + action buttons -->
+        <div class="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-700/50 flex-wrap">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="liveGreeting" class="text-xs font-semibold text-cyan-400 uppercase">Selamat ...</span>
+            <button id="themeToggle" title="Toggle theme" class="ml-2" onclick="toggleTheme()"><i id="themeIcon"
+                    class="fa-regular fa-moon"></i></button>
+            <button id="kbBtn" title="Knowledge Base / FAQ"
+                class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
+                onclick="openKB()"><i class="fa-solid fa-book"></i> KB</button>
+            <button id="oltBtn" title="Remote OLT EPON"
+                class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
+                onclick="openOltModal()"><i class="fa-solid fa-network-wired"></i> OLT</button>
+            <button id="cannedBtn" title="Canned responses (Ctrl+K)"
+                class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
+                onclick="openCanned()"><i class="fa-solid fa-note-sticky"></i> Canned</button>
+            <button id="broadcastBtn" title="Broadcast Gangguan ke Pelanggan"
+                class="ml-1 bg-rose-700/80 hover:bg-rose-600 text-white px-3 py-1 rounded-lg text-xs font-semibold"
+                onclick="openBroadcast()"><i class="fa-solid fa-bullhorn"></i> Broadcast</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+        <section class="lg:col-span-4 space-y-4">
+            <div
+                class="bg-slate-800/60 backdrop-blur-md border border-slate-700/50 p-5 rounded-2xl shadow-lg space-y-4 hover:shadow-cyan-500/10">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-slate-700/60 pb-2">
+                    <i class="fa-solid fa-id-card text-cyan-400 mr-2"></i>Parameter Utama
+                </h2>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Helpdesk</label>
+                    <input type="text" id="csName" value="Putra" placeholder="Nama Anda..."
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nama / Panggilan Pelanggan</label>
+                    <input type="text" id="custName" placeholder="Contoh: Kak Wahyu / PT Prisma"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">No. WhatsApp Pelanggan</label>
+                    <input type="text" id="custPhone" placeholder="Contoh: 081357984153"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+                </div>
+            </div>
+
+            <div
+                class="bg-slate-800/60 backdrop-blur-md border border-slate-700/50 p-5 rounded-2xl shadow-lg space-y-4 hover:shadow-cyan-500/10">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-slate-700/60 pb-2">
+                    <i class="fa-solid fa-calculator text-cyan-400 mr-2"></i>Kalkulator Redaman & Jalur
+                </h2>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Input Nilai dBm / CCQ %</label>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.1" id="lineValue" placeholder="Misal: -28 atau 45"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+                        <button onclick="hitungJalur()"
+                            class="bg-cyan-600 hover:bg-cyan-500 text-slate-950 px-3 rounded-lg font-bold text-xs transition cursor-pointer">Analisis</button>
+                    </div>
+                    <div id="calcResult" class="mt-2 p-2 rounded-lg text-xs font-semibold text-center hidden"></div>
+                </div>
+                <div class="pt-2 border-t border-slate-700/40">
+                    <button onclick="generateLogNote()"
+                        class="w-full bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-square-poll-horizontal"></i> Generate Log CRM CustPanel
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-4 space-y-4">
+            <div
+                class="bg-slate-800/60 backdrop-blur-md border border-slate-700/50 p-5 rounded-2xl shadow-lg hover:shadow-cyan-500/10">
+                <h2
+                    class="text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-slate-700/60 pb-2 mb-3">
+                    <i class="fa-solid fa-list text-cyan-400 mr-2"></i>Pilihan Template SOP
+                </h2>
+
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+                    <div>
+                        <span
+                            class="text-[10px] font-black text-cyan-400 tracking-widest block mb-1.5 uppercase">Kategori:
+                            Salam & Tanya Awal</span>
+                        <div class="grid grid-cols-1 gap-1">
+                            <button onclick="setTemplate('salamNormal')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">👋
+                                Salam Pembuka Standar</button>
+                            <button onclick="setTemplate('salamBantu')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🤝
+                                Salam + Ada yang bisa dibantu</button>
+                            <button onclick="setTemplate('tanyaId')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🔍
+                                Tanya ID / Atas Nama</button>
+                            <button onclick="setTemplate('komplainLemot')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">📉
+                                Pertanyaan Lemot Akses Apa</button>
+                            <button onclick="setTemplate('mohonTunggu')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">⏳
+                                Mohon Tunggu Sedang Dicek</button>
+                            <button onclick="setTemplate('divisiLain')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🏢
+                                Operan Komplain Divisi Lain</button>
+                            <button onclick="setTemplate('tanyaPln')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">💡
+                                Konfirmasi Pemadaman Listrik</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span
+                            class="text-[10px] font-black text-amber-400 tracking-widest block mb-1.5 uppercase">Kategori:
+                            Administrasi & Finance</span>
+                        <div class="grid grid-cols-1 gap-1">
+                            <button onclick="setTemplate('financeTransfer')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">💰
+                                Konfirmasi Proses Transfer</button>
+                            <button onclick="setTemplate('financeAlih')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">📞
+                                Alihkan ke Nomor Finance</button>
+                            <button onclick="setTemplate('financeIsolir')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🚫
+                                Status Terisolir / Suspend</button>
+                            <button onclick="setTemplate('financeAktif')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">✅
+                                Pembayaran Sukses & Re-Aktif</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span
+                            class="text-[10px] font-black text-emerald-400 tracking-widest block mb-1.5 uppercase">Kategori:
+                            Masalah Teknis / Gangguan</span>
+                        <div class="grid grid-cols-1 gap-1">
+                            <button onclick="setTemplate('antenaDown')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">📡
+                                Antena Wireless Tidak Konek</button>
+                            <button onclick="setTemplate('routerDown')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🔌
+                                Router Rumah Tidak Konek</button>
+                            <button onclick="setTemplate('sinyalJelek')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">📶
+                                Sinyal Pemancar Kurang Stabil</button>
+                            <button onclick="setTemplate('stuck')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🧱
+                                Perangkat Hang / Stuck</button>
+                            <button onclick="setTemplate('interferensi')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🌀
+                                Interferensi Frekuensi WiFi Lokal</button>
+                            <button onclick="setTemplate('losKabel')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">❌
+                                Indikasi Kabel Putus (LOSS)</button>
+                            <button onclick="setTemplate('redamanTinggi')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">⚠️
+                                Redaman Jalur Kabel Tinggi</button>
+                            <button onclick="setTemplate('dyingGasp')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🪫
+                                Perangkat Modem Melemah</button>
+                            <button onclick="setTemplate('gantiPass')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🔑
+                                Prosedur Ganti Password WiFi</button>
+                            <button onclick="setTemplate('massPln')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">⚡
+                                Gangguan Pemadaman Listrik PLN</button>
+                            <button onclick="setTemplate('massBackbone')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">🚧
+                                Perbaikan Jalur Kabel / ODP / ODC</button>
+                            <button onclick="setTemplate('massBts')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">💥
+                                Pemancar Utama / BTS Down</button>
+                            <button onclick="setTemplate('trafficFull')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition truncate">📊
+                                Over Penggunaan / Trafik Penuh</button>
+                            <button onclick="setTemplate('alihNomer')"
+                                class="text-left bg-slate-950/60 hover:bg-slate-700/50 p-2 rounded border border-slate-700/40 text-xs transition text-rose-400 font-semibold truncate">🔀
+                                Alihkan Komplain ke No Khusus</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span
+                            class="text-[10px] font-black text-purple-400 tracking-widest block mb-1.5 uppercase">Tambahan
+                            Akhir Chat (Append)</span>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button onclick="appendTeks('opsi1')"
+                                class="text-left bg-slate-900 hover:bg-purple-900/40 p-1.5 rounded border border-purple-800/30 text-[11px] transition truncate">Opsi
+                                Penutup 1</button>
+                            <button onclick="appendTeks('opsi2')"
+                                class="text-left bg-slate-900 hover:bg-purple-900/40 p-1.5 rounded border border-purple-800/30 text-[11px] transition truncate">Opsi
+                                Penutup 2</button>
+                            <button onclick="appendTeks('opsi3')"
+                                class="text-left bg-slate-900 hover:bg-purple-900/40 p-1.5 rounded border border-purple-800/30 text-[11px] transition truncate">Opsi
+                                Penutup 3</button>
+                            <button onclick="appendTeks('opsi4')"
+                                class="text-left bg-slate-900 hover:bg-purple-900/40 p-1.5 rounded border border-purple-800/30 text-[11px] transition truncate">Opsi
+                                Penutup 4</button>
+                        </div>
+                        <button onclick="appendTeks('promo')"
+                            class="w-full mt-1.5 text-center bg-purple-950/60 hover:bg-purple-900/50 p-2 rounded border border-purple-700/40 text-xs text-purple-300 font-bold transition">
+                            📱 Sisipkan Promosi Aplikasi My Upaz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-4 space-y-4">
+            <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-xl shadow-lg flex flex-col">
+                <h2
+                    class="text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-slate-700/60 pb-2 mb-2">
+                    <i class="fa-brands fa-whatsapp text-emerald-400 mr-2"></i>Preview Chat WhatsApp
+                </h2>
+                <textarea id="previewArea" rows="10"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-emerald-300 focus:outline-none focus:border-slate-700 resize-none custom-scrollbar"
+                    placeholder="Pilih atau ketik pesan Anda di sini..."></textarea>
+
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                    <button onclick="salinText(event)"
+                        class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-copy"></i> Salin Teks
+                    </button>
+                    <button onclick="kirimKeWa()"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim ke WA
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-xl shadow-lg space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
+                    <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider"><i
+                            class="fa-solid fa-brain text-purple-400 mr-2"></i>Groq AI Keluhan Analyzer</h2>
+                    <button onclick="clearAiInput()"
+                        class="text-[10px] bg-slate-900 hover:bg-slate-700 text-slate-400 px-2 py-0.5 rounded transition">Clear</button>
+                </div>
+                <div>
+                    <textarea id="aiInput" rows="3"
+                        placeholder="Paste / Tempel pesan keluhan murni dari WhatsApp pelanggan di sini..."
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition resize-none custom-scrollbar"></textarea>
+                    <div class="relative">
+                        <button id="btnAnalyze" onclick="processChatWithGroqAI()"
+                            class="w-full mt-2 bg-purple-600 hover:bg-purple-500 text-white py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Analisis Keluhan Pelanggan
+                        </button>
+                        <div id="kbSuggestions"
+                            class="absolute left-0 right-0 mt-2 hidden bg-slate-800 border border-slate-700 rounded p-2 text-xs max-h-40 overflow-y-auto custom-scrollbar">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="aiOutputBox"
+                    class="bg-slate-950/60 border border-slate-800 p-3 rounded-lg hidden text-xs space-y-2">
+                    <div
+                        class="font-bold text-cyan-400 border-b border-slate-800 pb-1 flex justify-between items-center">
+                        <span>🕵️ Hasil Analisis Llama-3 AI:</span>
+                        <span id="aiTriggerTag"
+                            class="bg-purple-950 text-purple-300 border border-purple-800 text-[9px] px-1.5 py-0.5 rounded font-bold">SECURE
+                            NODE</span>
+                    </div>
+                    <div><span class="text-amber-400 font-semibold">Kategori Masalah:</span> <span id="aiCategory"
+                            class="text-slate-300 font-bold"></span></div>
+                    <div><span class="text-red-400 font-semibold">Akar Masalah:</span> <span id="aiRootCause"
+                            class="text-slate-300"></span></div>
+                    <div><span class="text-emerald-400 font-semibold">Rekomendasi Tindakan:</span> <span id="aiAction"
+                            class="text-slate-300"></span></div>
+                    <div id="aiTemplateSuggestion"
+                        class="text-[11px] bg-slate-900 p-2 rounded border border-slate-800 text-cyan-300 font-medium">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="max-w-7xl mx-auto mt-4">
+        <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-xl shadow-lg space-y-3">
+            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-slate-700/60 pb-2">🔧
+                Diagnostics Toolkit</h2>
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
+                <div class="flex gap-2 items-center">
+                    <input id="diagSize" type="number" min="100000" step="100000" value="5000000"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs" />
+                    <button onclick="runSpeedtest()"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 px-3 py-1 rounded-lg text-xs font-bold">Run
+                        Speedtest</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="captureDiagLog()"
+                        class="bg-cyan-600 hover:bg-cyan-500 px-3 py-1 rounded-lg text-xs font-bold">Capture
+                        Log</button>
+                    <button onclick="downloadServerLogs()"
+                        class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg text-xs">Download Server
+                        Logs</button>
+                </div>
+            </div>
+            <div id="diagSpeedResult" class="text-xs text-slate-300">Speed: -</div>
+            <div class="text-[11px] text-slate-400">Speedtest downloads a sample payload from this local server. Logs
+                are stored on the server in <strong>diag_logs.txt</strong>.</div>
+        </div>
+    </div>
+
+    <div id="cannedModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-6">
+        <div class="absolute inset-0 bg-black/40" onclick="closeCanned()"></div>
+        <div class="relative w-full max-w-2xl bg-slate-900/95 border border-slate-700 rounded-xl shadow-xl p-4 z-10">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold">Canned Responses</h3>
+                <div class="flex items-center gap-2">
+                    <input id="cannedSearch" oninput="renderCannedList()" placeholder="Cari... (kata kunci)"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                    <button onclick="closeCanned()" class="text-xs bg-slate-700 px-2 py-1 rounded">Tutup</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <div id="cannedList" class="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar"></div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-300">Buat / Edit</label>
+                    <input id="cannedTitle" placeholder="Judul singkat"
+                        class="w-full mt-1 mb-2 bg-slate-800 border border-slate-700 rounded p-2 text-xs" />
+                    <textarea id="cannedText" rows="8" placeholder="Isi template... gunakan {waktu}, {cs}, {pelanggan}"
+                        class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs"></textarea>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="saveCannedFromForm()"
+                            class="bg-cyan-600 px-3 py-1 text-xs rounded font-bold">Simpan</button>
+                        <button onclick="clearCannedForm()"
+                            class="bg-slate-700 px-3 py-1 text-xs rounded">Bersihkan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="kbModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-6">
+        <div class="absolute inset-0 bg-black/40" onclick="closeKB()"></div>
+        <div class="relative w-full max-w-3xl bg-slate-900/95 border border-slate-700 rounded-xl shadow-xl p-4 z-10">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold">Knowledge Base (FAQ)</h3>
+                <div class="flex items-center gap-2">
+                    <input id="kbSearch" oninput="renderKBList()" placeholder="Cari judul atau isi..."
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                    <button onclick="closeKB()" class="text-xs bg-slate-700 px-2 py-1 rounded">Tutup</button>
+                </div>
+            </div>
+
+
+            <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-2">
+                    <div id="kbList" class="space-y-2 max-h-72 overflow-y-auto pr-2 custom-scrollbar"></div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-300">Tambah/Edit Entry</label>
+                    <input id="kbTitle" placeholder="Judul FAQ (mis. Cara reset ONT)"
+                        class="w-full mt-1 mb-2 bg-slate-800 border border-slate-700 rounded p-2 text-xs" />
+                    <textarea id="kbText" rows="8" placeholder="Jawaban / langkah-langkah..."
+                        class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs"></textarea>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="saveKBFromForm()"
+                            class="bg-cyan-600 px-3 py-1 text-xs rounded font-bold">Simpan</button>
+                        <button onclick="clearKBForm()"
+                            class="bg-slate-700 px-3 py-1 text-xs rounded">Bersihkan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OLT Modal (Merged) -->
+    <div id="oltModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-6">
+        <div class="absolute inset-0 bg-black/40" onclick="closeOltModal()"></div>
+        <div
+            class="relative w-full max-w-4xl bg-slate-900/95 border border-slate-700 rounded-xl shadow-xl p-4 z-10 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between mb-3 shrink-0">
+                <h3 class="text-sm font-bold">Menu OLT</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeOltModal()"
+                        class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded">Tutup</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-2 border-b border-slate-700 mb-3 pb-2 shrink-0">
+                <button onclick="switchOltTab('ssh')" id="tabBtn-ssh"
+                    class="px-3 py-1 text-xs font-bold rounded bg-cyan-600 text-white">Config OLT (SSH)</button>
+                <button onclick="switchOltTab('web')" id="tabBtn-web"
+                    class="px-3 py-1 text-xs font-bold rounded bg-slate-800 text-slate-400">Web Remote</button>
+            </div>
+
+            <!-- Tab Content: SSH -->
+            <div id="tabContent-ssh"
+                class="overflow-y-auto flex-1 text-sm bg-slate-950 border border-slate-700 rounded-lg">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-800 sticky top-0 shadow-md">
+                        <tr>
+                            <th class="p-2 border-b border-slate-700 font-semibold text-slate-300">NAMA</th>
+                            <th class="p-2 border-b border-slate-700 font-semibold text-slate-300">ENTITAS</th>
+                            <th class="p-2 border-b border-slate-700 font-semibold text-slate-300">IP</th>
+                            <th class="p-2 border-b border-slate-700 font-semibold text-slate-300">USER</th>
+                            <th class="p-2 border-b border-slate-700 font-semibold text-slate-300">PASS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="configOltTableBody" class="divide-y divide-slate-800 text-xs">
+                        <!-- Data will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Content: Web -->
+            <div id="tabContent-web" class="hidden flex-col gap-2 overflow-y-auto flex-1 pr-2 custom-scrollbar">
+                <div class="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2 shrink-0">
+                    <input id="oltId" type="hidden" />
+                    <input id="oltName" placeholder="Nama OLT"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs md:col-span-4" />
+                    <input id="oltArea" placeholder="Area"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                    <input id="oltIp" placeholder="IP (e.g. 10.4.20.6)"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                    <input id="oltUser" placeholder="User"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                    <input id="oltPass" placeholder="Pass"
+                        class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs" />
+                </div>
+                <div class="flex gap-2 mb-3 shrink-0">
+                    <button onclick="saveOltFromForm()"
+                        class="bg-cyan-600 px-3 py-1 text-xs rounded font-bold">Simpan</button>
+                    <button onclick="clearOltForm()" class="bg-slate-700 px-3 py-1 text-xs rounded">Bersihkan</button>
+                </div>
+
+                <div id="oltList" class="space-y-2 text-xs"></div>
+                <div class="text-[11px] text-slate-400 mt-3">Click an IP to open in a new tab. Browser may block
+                    credentialed URLs; a fallback credential card will appear.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rawTemplates = {
+            salamNormal: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.",
+            salamBantu: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nApakah ada yang bisa saya bantu?🙏🏻🙏🏻",
+            tanyaId: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf sebelumnya bisa dibantu untuk id pelanggan atau nama pelanggan yang terdaftar atas nama siapa?🙏🏻🙏🏻",
+            komplainLemot: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nTerkait kendala lemotnya, boleh diinformasikan biasanya terjadi saat akses apa ya, Kak?",
+            mohonTunggu: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf atas ketidaknyamanannya, untuk kendala tersebut akan kami cek terlebih dahulu mohon ditunggu.🙏🏻🙏🏻",
+            divisiLain: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nKami mendapatkan informasi bahwa terdapat kendala pada koneksi wifi tidak bisa digunakan/lemot.\n\nUntuk itu kami lakukan pemeriksaan terlebih dahulu terkait kendalanya, mohon kesediannya menunggu. 🙏",
+            financeTransfer: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nTerimakasih telah melakukan pembayaran melalui transfer dan telah melakukan konfirmasi. Kami akan segera memproses pembayaran anda.",
+            financeAlih: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf perihal pembayaran bisa ditanyakan ke Finance Upaznet. Silakan hubungi ke nomor berikut:",
+            financeIsolir: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf, setelah kami periksa saat ini status koneksi tersuspend. Sebelumnya apakah sudah melakukan pembayaran tagihan internetnya?🙏🏻🙏🏻",
+            financeAktif: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nTerimakasih telah melakukan pembayaran, Bukti pembayaran sudah kami terima dan saat ini sedang kami proses. 🙏🏻\n\nSaat ini layanan internet Anda sudah aktif kembali. Silakan dicoba dan semoga dapat digunakan dengan lancar. 🙏🏻",
+            antenaDown: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami cek terpantau antena tidak terhubung dengan pemancar kami.\n\nUntuk hal tersebut segera kami jadwalkan untuk dilakukan kunjungan oleh tim teknisi kami ke lokasi.🙏🏻🙏🏻",
+            routerDown: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami periksa saat ini router tidak terkoneksi dengan jaringan kami. Mohon dibantu untuk melepas adaptor selama 2 menit lalu dipasang kembali.🙏🏻🙏🏻",
+            sinyalJelek: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami periksa terpantau sinyal kurang stabil. Terkait hal tersebut saya jadwalkan agar dicek oleh tim teknis kami ke lokasi. Mohon ditunggu, terima kasih. 🙏🏻🙏🏻",
+            stuck: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami periksa saat ini router/modem mengalami stuck. Mohon dibantu untuk melepas adaptor selama 2 menit lalu dipasang kembali.🙏🏻🙏🏻",
+            interferensi: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nSetelah kami lakukan pemeriksaan, kendala tersebut disebabkan oleh adanya interferensi sinyal WiFi, yang terjadi karena banyaknya perangkat atau jaringan lain di sekitar yang menggunakan frekuensi yang sama.\n\nUntuk hasil yang lebih optimal, kami sarankan penggunaan jaringan WiFi 5 GHz agar koneksi internet yang diperoleh lebih stabil dan maksimal. 🙏🏻",
+            losKabel: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami periksa, terdapat indikasi kabel putus. Untuk hal tersebut segera kami jadwalkan untuk dilakukan perbaikan oleh tim teknisi ke lokasi.🙏🏻🙏🏻",
+            redamanTinggi: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami periksa gangguan internet tidak stabil diakibatkan indikasi kendala pada jalur kabelnya.\n\nUntuk itu akan segera dilakukan perbaikan oleh tim teknisi ke lokasi.🙏🏻🙏🏻",
+            dyingGasp: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf setelah kami lakukan pemeriksaan terdapat indikasi kendala pada perangkat modem. Mohon dibantu untuk melepas adaptor selama 2 menit lalu dipasang kembali. 🙏🏻🙏🏻",
+            gantiPass: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nBaik, untuk penggantian password wifi bisa kami bantu gantikan. Silakan untuk menuliskan password wifi terbarunya ya. 🙏🏻🙏🏻",
+            massPln: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf atas ketidaknyamanannya, kami infomasikan saat ini jaringan terkendala dikarenakan sedang ada pemadaman listrik dari pihak PLN.\n\nMohon ditunggu hingga listrik sudah normal kembali. Demikian informasi kami sampaikan, terima kasih.🙏🏻🙏🏻",
+            massBackbone: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf terkait kendala yang dialami, terpantau saat ini sedang ada perbaikan di sisi jalur kabel kami.\n\nTerkait hal tersebut akan kami infokan kembali jika sudah selesai perbaikan dan koneksi sudah normal kembali. Terima kasih. 🙏🏻🙏🏻",
+            massBts: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf terkait kendala yang dialami, terpantau saat ini sedang ada gangguan di sisi pemancar kami.\n\nSaat ini kami dan tim masih melakukan upaya untuk melakukan perbaikan secepat mungkin. 🙏️🙏️",
+            trafficFull: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf, setelah kami lakukan pemeriksaan, untuk kendala lemot diakibatkan saat ini penggunaan sudah melewati batas maksimal atau over penggunaan. 📉\n\nSilakan untuk melakukan penggantian kata sandi terlebih dahulu untuk mengurangi jumlah penggunanya. 🙏🏻🙏🏻",
+            tanyaPln: "Selamat {waktu} Sahabat Upaznet👋\nDengan saya {cs} dari tim layanan bantuan upaznet.\n\nMohon maaf mengganggu waktunya, kami mau menanyakan apakah di lokasi sedang ada pemadaman listrik?",
+
+            opsi1: "\n\nApabila tidak ada hal lain yang dapat kami bantu, percakapan ini kami akhiri. Semoga harinya menyenangkan! 👋✨",
+            opsi2: "\n\nBaik, terima kasih banyak ya Kak sudah berkenan meluangkan waktu untuk menyampaikan keluhan ini kepada kami. Masukan Kakak sangat berarti agar kami bisa melayani dengan lebih baik lagi. 🙏✨\n\nSehat dan bahagia selalu ya kak. Selamat melanjutkan aktivitas! 😊👋",
+            opsi3: "\n\nSemoga solusi tadi bisa membantu menyelesaikan kendalanya ya kak. Jika nanti masih ada hal lain yang membingungkan atau butuh bantuan lagi, silakan untuk langsung hubungi saya kembali. Kami siap membantu sampai tuntas! 💪😊\n\nTerima kasih atas kesabaran dan kebaikan hati kak {pelanggan}. Salam hangat! 🤝",
+            opsi4: "\n\nTerima kasih ya Kak atas pengertian dan kerja samanya. Mohon maaf atas ketidaknyamanannya tadi, ya. 🙇‍♂️\n\nSemoga harinya menyenangkan dan lancar selalu! Have a great day! ✨☀️",
+            promo: "\n\nSekedar informasi tambahan ya kak, saat ini untuk layanan pembayaran, pengecekan masa aktif, tanggal jatuh tempo, hingga pengajuan komplain sudah bisa dilakukan secara mandiri melalui aplikasi My Upaz 📱\n\nSilakan mengunduh aplikasinya melalui tautan berikut:\n🔗 https://play.google.com/store/apps/details?id=id.net.upaz.myupaz\n\nJika nanti Kakak memerlukan bantuan atau panduan saat registrasi, silakan hubungi kami kembali ya. Semoga informasinya membantu & selamat beraktivitas kembali Kak! 🙏",
+            alihNomer: "Hallo sahabat upaznet, Mohon maaf untuk layanan komplain kami alihkan ke nomor berikut:\n👉 wa.me/+6285804800803\n\nSilakan mengirimkan pesan dengan format:\nNama: {pelanggan}\nID Pelanggan: "
+        };
+
+        function getGreetingTime() {
+            const hours = new Date().getHours();
+            if (hours >= 4 && hours < 11) return "Pagi";
+            if (hours >= 11 && hours < 15) return "Siang";
+            if (hours >= 15 && hours < 18) return "Sore";
+            return "Malam";
+        }
+
+        // Bug 4 fix: guard null — element belum tentu ada saat script dieksekusi inline
+        function updateLiveGreeting() {
+            const el = document.getElementById('liveGreeting');
+            if (el) el.innerText = "Selamat " + getGreetingTime();
+        }
+        setInterval(updateLiveGreeting, 10000);
+        // jalankan setelah DOM ready agar elemen pasti ada
+        document.addEventListener('DOMContentLoaded', updateLiveGreeting);
+
+        // Bug 6 fix: guard null/undefined rawText agar tidak throw TypeError
+        function processText(rawText) {
+            if (!rawText) return '';
+            const cs = document.getElementById('csName').value || 'Putra';
+            const pelanggan = document.getElementById('custName').value || '(Nama Pelanggan)';
+            const waktu = getGreetingTime();
+
+            return rawText
+                .replace(/{waktu}/g, waktu)
+                .replace(/{cs}/g, cs)
+                .replace(/{pelanggan}/g, pelanggan);
+        }
+
+        function setTemplate(key) {
+            document.getElementById('previewArea').value = processText(rawTemplates[key]);
+        }
+
+        function appendTeks(key) {
+            const currentText = document.getElementById('previewArea').value;
+            document.getElementById('previewArea').value = currentText + processText(rawTemplates[key]);
+        }
+
+        function salinText(e) {
+            const area = document.getElementById('previewArea');
+            if (!area.value) return;
+            area.select();
+            navigator.clipboard.writeText(area.value);
+
+            // Fix event handler issue
+            const currentEvent = e || window.event;
+            const buttonElement = currentEvent ? currentEvent.currentTarget : null;
+            if (buttonElement) {
+                const originalText = buttonElement.innerHTML;
+                buttonElement.innerHTML = "<i class='fa-solid fa-check text-emerald-400'></i> Berhasil!";
+                setTimeout(() => { buttonElement.innerHTML = originalText }, 1500);
+            }
+        }
+
+        // Bug 5 fix: guard nomor kosong agar tidak buka tab wa.me/undefined
+        function kirimKeWa() {
+            const text = document.getElementById('previewArea').value;
+            let rawPhone = document.getElementById('custPhone').value.trim();
+            if (!text) { alert('Pesan kosong!'); return; }
+            if (!rawPhone) { alert('Nomor WhatsApp pelanggan belum diisi!'); return; }
+
+            if (rawPhone.startsWith('0')) rawPhone = '62' + rawPhone.slice(1);
+            rawPhone = rawPhone.replace(/[-+\s]/g, '');
+
+            window.open(`https://api.whatsapp.com/send?phone=${rawPhone}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function hitungJalur() {
+            const val = parseFloat(document.getElementById('lineValue').value);
+            const box = document.getElementById('calcResult');
+            if (isNaN(val)) return;
+            box.className = "mt-2 p-2 rounded-lg text-xs font-semibold text-center";
+
+            if (val < 0) {
+                if (val >= -25) { box.innerText = `Jalur FO Bagus (${val} dBm)`; box.classList.add('bg-emerald-950', 'text-emerald-300'); }
+                else if (val >= -27) { box.innerText = `Jalur FO Redaman Tinggi (${val} dBm)`; box.classList.add('bg-amber-950', 'text-amber-300'); }
+                else { box.innerText = `Jalur FO Drop Parah (${val} dBm)`; box.classList.add('bg-rose-950', 'text-rose-300'); }
+            } else {
+                if (val >= 75) { box.innerText = `Sinyal Wireless Bagus (${val}%)`; box.classList.add('bg-emerald-950', 'text-emerald-300'); }
+                else if (val >= 60) { box.innerText = `Sinyal Wireless Sedang (${val}%)`; box.classList.add('bg-amber-950', 'text-amber-300'); }
+                else { box.innerText = `Sinyal Wireless Jelek (${val}%)`; box.classList.add('bg-rose-950', 'text-rose-300'); }
+            }
+            box.classList.remove('hidden');
+        }
+
+        function generateLogNote() {
+            const pName = document.getElementById('custName').value || 'Pelanggan';
+            const logValue = document.getElementById('lineValue').value ? `[Indikator Alat: ${document.getElementById('lineValue').value}]` : '';
+            const timestamp = new Date().toLocaleTimeString('id-ID');
+            document.getElementById('previewArea').value = `LOG HELPDESK [${timestamp}]\nPelanggan: ${pName}\nKendala: Terpantau tidak stabil/putus. ${logValue}\nPenanganan: Dipandu sesuai SOP.`;
+        }
+
+        // ==========================================================
+        //         SECURE AJAX NODE REQUEST (DIRECT LOCAL PHP)
+        // ==========================================================
+        async function processChatWithGroqAI() {
+            const userInput = document.getElementById('aiInput').value;
+            const btn = document.getElementById('btnAnalyze');
+            const outBox = document.getElementById('aiOutputBox');
+
+            if (!userInput.trim()) {
+                alert("Silakan paste chat dari pelanggan terlebih dahulu!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Membedah Keluhan dengan AI...`;
+            outBox.classList.add('hidden');
+
+            const systemPrompt = `Anda adalah sistem backend pintar AI untuk ISP Upaznet. Tugas Anda membedah chat keluhan pelanggan dan merespons dengan format JSON murni.
+Kunci tombol aksi (action_key) yang valid HANYA boleh salah satu dari daftar berikut:
+- 'losKabel'
+- 'trafficFull'
+- 'interferensi'
+- 'stuck'
+- 'financeIsolir'
+- 'massPln'
+- 'massBts'
+- 'massBackbone'
+- 'tanyaId'
+- 'gantiPass'
+- 'antenaDown'
+- 'routerDown'
+
+Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan apapun:
+{
+  "kategori": "Nama Kategori Singkat",
+  "akar_masalah": "Penjelasan singkat akar masalah",
+  "rekomendasi": "Langkah teknis bantuan cs",
+  "action_key": "salah satu kunci di atas"
+}`;
+
+            try {
+                // Request dilempar ke file PHP lokal di server, bebas dari aturan CORS browser
+                const response = await fetch("analyze_groq.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "llama-3.1-8b-instant",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: `Analisis chat pelanggan ini: "${userInput}"` }
+                        ],
+                        temperature: 0.1,
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                if (!response.ok) throw new Error("Gagal mengambil data dari gateway server.");
+
+                const data = await response.json();
+                const resAi = JSON.parse(data.choices[0].message.content);
+
+                document.getElementById('aiCategory').innerText = resAi.kategori;
+                document.getElementById('aiRootCause').innerText = resAi.akar_masalah;
+                document.getElementById('aiAction').innerText = resAi.rekomendasi;
+
+                document.getElementById('aiTemplateSuggestion').innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mt-1 pt-2 border-t border-slate-800">
+                        <span>💡 Rekomendasi SOP: <strong>${resAi.action_key}</strong></span>
+                        <button onclick="setTemplate('${resAi.action_key}')" class="bg-cyan-500 text-slate-950 font-bold px-3 py-1 rounded text-[11px] hover:bg-cyan-400 transition cursor-pointer shadow">
+                            <i class="fa-solid fa-bolt"></i> Terapkan Template
+                        </button>
+                    </div>`;
+
+                outBox.classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                alert("Gagal memproses AI. Pastikan file 'analyze_groq.php' berada di folder yang sama atau server web Anda aktif.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Analisis Keluhan Pelanggan`;
+            }
+        }
+
+        function clearAiInput() {
+            document.getElementById('aiInput').value = '';
+            document.getElementById('aiOutputBox').classList.add('hidden');
+        }
+
+        // -------------------------------
+        // Canned responses (localStorage)
+        // -------------------------------
+        function openCanned() {
+            document.getElementById('cannedModal').classList.remove('hidden');
+            renderCannedList();
+            document.getElementById('cannedTitle').focus();
+        }
+        function closeCanned() { document.getElementById('cannedModal').classList.add('hidden'); }
+
+        function getCanned() {
+            try { return JSON.parse(localStorage.getItem('upaz_canned') || 'null') || []; } catch (e) { return []; }
+        }
+        function setCanned(list) { localStorage.setItem('upaz_canned', JSON.stringify(list)); }
+
+        function renderCannedList() {
+            const listBox = document.getElementById('cannedList');
+            const q = (document.getElementById('cannedSearch').value || '').toLowerCase();
+            const items = getCanned();
+            listBox.innerHTML = '';
+            if (!items.length) {
+                listBox.innerHTML = '<div class="text-xs text-slate-400">Belum ada canned responses.</div>';
+                return;
+            }
+
+            items.filter(it => (!q || it.title.toLowerCase().includes(q) || it.text.toLowerCase().includes(q))).forEach(it => {
+                const div = document.createElement('div');
+                div.dataset.id = it.id;
+                div.className = 'p-2 bg-slate-800/60 border border-slate-700 rounded text-xs';
+                div.innerHTML = `<div class="flex justify-between items-start gap-2"><div><strong>${escapeHtml(it.title)}</strong><div class='text-[11px] text-slate-400 mt-1' style='white-space:pre-wrap'>${escapeHtml(it.text).slice(0, 200)}</div></div>
+                            <div class="flex flex-col items-end gap-1">
+                                <button class='px-2 py-0.5 text-[11px] bg-cyan-600 text-slate-900 rounded' onclick='insertCanned(${it.id})'>Insert</button>
+                                <button class='px-2 py-0.5 text-[11px] bg-amber-600 rounded mt-1' onclick='editCanned(${it.id})'>Edit</button>
+                                <button class='px-2 py-0.5 text-[11px] bg-rose-600 rounded mt-1' onclick='deleteCanned(${it.id})'>Hapus</button>
+                            </div></div>`;
+                listBox.appendChild(div);
+            })
+        }
+
+        // Normalize text for comparison (remove extra whitespace, lowercase)
+        function normalizeText(s) { try { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); } catch (e) { return String(s || ''); } }
+
+        function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        function saveCannedFromForm() {
+            const title = document.getElementById('cannedTitle').value.trim();
+            const text = document.getElementById('cannedText').value.trim();
+            if (!title || !text) { alert('Judul dan isi wajib diisi'); return; }
+            const items = getCanned();
+            const editingId = parseInt(document.getElementById('cannedTitle').dataset.editId || '0');
+            if (editingId) {
+                const idx = items.findIndex(i => i.id === editingId);
+                if (idx >= 0) { items[idx].title = title; items[idx].text = text; }
+            } else {
+                const id = items.length ? (Math.max(...items.map(i => i.id)) + 1) : 1;
+                items.push({ id, title, text });
+            }
+            setCanned(items);
+            clearCannedForm();
+            renderCannedList();
+        }
+
+        function clearCannedForm() { document.getElementById('cannedTitle').value = ''; document.getElementById('cannedText').value = ''; delete document.getElementById('cannedTitle').dataset.editId; }
+
+        function insertCanned(id) {
+            const items = getCanned(); const it = items.find(i => i.id === id); if (!it) return;
+            const out = processText(it.text);
+            // insert into preview or aiInput if focused
+            const ai = document.getElementById('aiInput'); const prev = document.getElementById('previewArea');
+            if (document.activeElement === ai) { ai.value = out; ai.focus(); }
+            else { prev.value = out; prev.focus(); }
+            closeCanned();
+        }
+
+        function editCanned(id) { const items = getCanned(); const it = items.find(i => i.id === id); if (!it) return; document.getElementById('cannedTitle').value = it.title; document.getElementById('cannedText').value = it.text; document.getElementById('cannedTitle').dataset.editId = id; }
+
+        function deleteCanned(id) { if (!confirm('Hapus canned response ini?')) return; const items = getCanned().filter(i => i.id !== id); setCanned(items); renderCannedList(); }
+
+        // keyboard shortcut Ctrl+K to open
+        document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCanned(); } });
+
+        // Seed some useful canned responses on first run
+        (function seedCannedDefaults() {
+            const existing = getCanned();
+            if (existing.length) return;
+            const defaults = [
+                { id: 1, title: 'Salam Pembuka', text: rawTemplates.salamNormal },
+                { id: 2, title: 'Minta ID Pelanggan', text: rawTemplates.tanyaId },
+                { id: 3, title: 'Prosedur Ganti Password', text: rawTemplates.gantiPass },
+                { id: 4, title: 'Status Suspend / Tagihan', text: rawTemplates.financeIsolir }
+            ];
+            setCanned(defaults);
+        })();
+
+        // -------------------------------
+        // Knowledge Base (KB) functions
+        // -------------------------------
+        function openKB() { document.getElementById('kbModal').classList.remove('hidden'); renderKBList(); }
+        function closeKB() { document.getElementById('kbModal').classList.add('hidden'); }
+
+        function getKB() { try { return JSON.parse(localStorage.getItem('upaz_kb') || 'null') || [] } catch (e) { return [] } }
+        function setKB(list) { localStorage.setItem('upaz_kb', JSON.stringify(list)); }
+
+        function renderKBList() {
+            const q = (document.getElementById('kbSearch')?.value || '').toLowerCase();
+            const box = document.getElementById('kbList'); box.innerHTML = '';
+            const items = getKB();
+            if (!items.length) { box.innerHTML = '<div class="text-xs text-slate-400">Belum ada entry KB.</div>'; return; }
+            items.filter(it => (!q || it.title.toLowerCase().includes(q) || it.text.toLowerCase().includes(q))).forEach(it => {
+                const div = document.createElement('div'); div.className = 'p-2 bg-slate-800/60 border border-slate-700 rounded text-xs';
+                div.innerHTML = `<div class="flex justify-between items-start gap-2"><div><strong>${escapeHtml(it.title)}</strong><div class='text-[11px] text-slate-400 mt-1' style='white-space:pre-wrap'>${escapeHtml(it.text).slice(0, 300)}</div></div>
+                        <div class="flex flex-col items-end gap-1">
+                            <button class='px-2 py-0.5 text-[11px] bg-emerald-600 text-slate-900 rounded' onclick='convertKBtoCanned(${it.id})'>Convert</button>
+                            <button class='px-2 py-0.5 text-[11px] bg-cyan-600 text-slate-900 rounded' onclick='useKB(${it.id})'>Use</button>
+                            <button class='px-2 py-0.5 text-[11px] bg-amber-600 rounded mt-1' onclick='editKB(${it.id})'>Edit</button>
+                            <button class='px-2 py-0.5 text-[11px] bg-rose-600 rounded mt-1' onclick='deleteKB(${it.id})'>Hapus</button>
+                        </div></div>`;
+                box.appendChild(div);
+            })
+        }
+
+        function saveKBFromForm() {
+            const title = document.getElementById('kbTitle').value.trim();
+            const text = document.getElementById('kbText').value.trim();
+            if (!title || !text) { alert('Judul dan isi wajib diisi'); return; }
+            const items = getKB(); const editing = parseInt(document.getElementById('kbTitle').dataset.editId || '0');
+            if (editing) { const idx = items.findIndex(i => i.id === editing); if (idx >= 0) { items[idx].title = title; items[idx].text = text; } }
+            else { const id = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1; items.push({ id, title, text }); }
+            setKB(items); clearKBForm(); renderKBList();
+        }
+
+        function clearKBForm() { document.getElementById('kbTitle').value = ''; document.getElementById('kbText').value = ''; delete document.getElementById('kbTitle').dataset.editId; }
+
+        function useKB(id) { const it = getKB().find(i => i.id === id); if (!it) return; const out = processText(it.text); const ai = document.getElementById('aiInput'); const prev = document.getElementById('previewArea'); if (document.activeElement === ai) { ai.value = out; ai.focus(); } else { prev.value = out; prev.focus(); } }
+
+        function editKB(id) { const it = getKB().find(i => i.id === id); if (!it) return; document.getElementById('kbTitle').value = it.title; document.getElementById('kbText').value = it.text; document.getElementById('kbTitle').dataset.editId = id; }
+
+        function deleteKB(id) { if (!confirm('Hapus entry KB ini?')) return; const items = getKB().filter(i => i.id !== id); setKB(items); renderKBList(); }
+
+        // Simple search for suggestions under AI input
+        function searchKBSuggestions(q) {
+            q = (q || '').toLowerCase().trim();
+            if (!q) return [];
+            const items = getKB();
+            return items.map(it => {
+                let score = 0;
+                if (it.title.toLowerCase().includes(q)) score += 10;
+                if (it.text.toLowerCase().includes(q)) score += 5;
+                const toks = q.split(/\s+/).filter(Boolean);
+                toks.forEach(t => {
+                    if (it.title.toLowerCase().includes(t)) score += 2;
+                    if (it.text.toLowerCase().includes(t)) score += 1;
+                });
+                return { it, score };
+            }).filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 6).map(s => s.it);
+        }
+
+        // Show suggestions under AI input
+        document.getElementById('aiInput').addEventListener('input', function (e) { const q = e.target.value; const list = searchKBSuggestions(q); const box = document.getElementById('kbSuggestions'); box.innerHTML = ''; if (!list.length) { box.classList.add('hidden'); return; } list.forEach(it => { const el = document.createElement('div'); el.className = 'p-2 hover:bg-slate-800/50 cursor-pointer rounded'; el.innerHTML = `<strong>${escapeHtml(it.title)}</strong><div class='text-[11px] text-slate-400' style='white-space:pre-wrap'>${escapeHtml(it.text).slice(0, 200)}</div>`; el.onclick = () => { document.getElementById('aiInput').value = processText(it.text); document.getElementById('kbSuggestions').classList.add('hidden'); }; box.appendChild(el); }); box.classList.remove('hidden'); });
+
+        // Convert a KB entry into a canned response
+        function convertKBtoCanned(id) {
+            const kb = getKB().find(i => i.id === id); if (!kb) return alert('Entry KB tidak ditemukan');
+            const items = getCanned();
+
+            // Deduplicate by content: if a canned with identical normalized text exists, open it instead of creating.
+            const normKb = normalizeText(kb.text);
+            const existingByText = items.find(c => normalizeText(c.text) === normKb);
+            if (existingByText) {
+                // Show canned modal and scroll to existing item
+                openCanned();
+                try {
+                    setTimeout(() => {
+                        const el = document.querySelector('#cannedList [data-id="' + existingByText.id + '"]');
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.boxShadow = '0 0 0 3px rgba(6,182,212,0.12)';
+                            setTimeout(() => { el.style.boxShadow = ''; }, 1400);
+                        }
+                    }, 120);
+                } catch (e) { }
+                alert('Canned sudah ada berdasarkan isi: "' + existingByText.title + '" — membuka entry yang ada.');
+                return;
+            }
+
+            // avoid duplicate title; append suffix if exists
+            let title = kb.title;
+            if (items.some(c => c.title === title)) {
+                let idx = 1; while (items.some(c => c.title === `${title} (${idx})`)) idx++; title = `${title} (${idx})`;
+            }
+            const newId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+            items.push({ id: newId, title: title, text: kb.text });
+            setCanned(items);
+            // refresh canned list if modal open
+            try { renderCannedList(); } catch (e) { }
+            alert('Converted KB → Canned: "' + title + '"');
+        }
+
+        function runSpeedtest() {
+            const size = parseInt(document.getElementById('diagSize').value) || 5000000;
+            const resultEl = document.getElementById('diagSpeedResult');
+            resultEl.innerText = 'Running...';
+            const startedAt = performance.now();
+            let receivedBytes = 0;
+
+            fetch(`/diag/download?size=${size}`, { cache: 'no-store' })
+                .then(async (resp) => {
+                    if (!resp.ok) throw new Error('download failed');
+                    const reader = resp.body?.getReader();
+                    if (!reader) {
+                        const buffer = await resp.arrayBuffer();
+                        receivedBytes = buffer.byteLength;
+                        return;
+                    }
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        receivedBytes += value?.length || 0;
+                    }
+                })
+                .then(() => {
+                    const elapsedSec = (performance.now() - startedAt) / 1000;
+                    const mbps = elapsedSec > 0 ? ((receivedBytes * 8) / elapsedSec) / 1e6 : 0;
+                    resultEl.innerText = `Speed: ${mbps.toFixed(2)} Mbps — ${receivedBytes} bytes in ${elapsedSec.toFixed(2)}s`;
+                    window.lastDiagSpeed = { mbps, receivedBytes, elapsedSec, ts: new Date().toISOString() };
+                })
+                .catch((err) => {
+                    resultEl.innerText = 'Speedtest failed: ' + (err?.message || err);
+                });
+        }
+
+        function captureDiagLog() {
+            const payload = {
+                ts: new Date().toISOString(),
+                csName: document.getElementById('csName')?.value || '',
+                custName: document.getElementById('custName')?.value || '',
+                custPhone: document.getElementById('custPhone')?.value || '',
+                previewArea: document.getElementById('previewArea')?.value || '',
+                aiInput: document.getElementById('aiInput')?.value || '',
+                speedtest: window.lastDiagSpeed || null,
+                localStorage: {
+                    upaz_theme: localStorage.getItem('upaz_theme') || 'dark',
+                    upaz_canned: getCanned(),
+                    upaz_kb: getKB()
+                },
+                userAgent: navigator.userAgent
+            };
+
+            fetch('/diag/log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(r => r.json())
+                .then((j) => {
+                    if (j?.ok) alert('Log captured successfully.');
+                    else alert('Log capture failed.');
+                })
+                .catch((err) => {
+                    alert('Log capture failed: ' + (err?.message || err));
+                });
+        }
+
+        function downloadServerLogs() {
+            window.open('/diag/logs', '_blank');
+        }
+
+        // -------------------------------
+        // OLT Remote helpers (localStorage-backed)
+        // -------------------------------
+        const OLT_KEY = 'upaz_olt';
+
+        function getOltDevices() {
+            try { return JSON.parse(localStorage.getItem(OLT_KEY) || 'null') || []; } catch (e) { return []; }
+        }
+        function setOltDevices(list) { localStorage.setItem(OLT_KEY, JSON.stringify(list)); }
+
+        // Seed defaults if none
+        (function seedOltDefaults() {
+            const existing = getOltDevices();
+            if (existing && existing.length) return;
+            const defaults = [
+                { id: 1, name: 'OLT EPON GRM', area: 'UGR', ip: '10.4.20.6', user: 'root', pass: 'as009988' },
+                { id: 2, name: 'OLT EPON SIDODADI', area: 'UGR', ip: '10.4.20.11', user: 'root', pass: 'as009988' },
+                { id: 3, name: 'OLT EPON BBD (WLINGI)', area: 'UGR', ip: '10.4.20.22', user: 'root', pass: 'as009988' },
+                { id: 4, name: 'OLT EPON SRENGAT/PONGGOK', area: 'UGR', ip: '10.4.20.15', user: 'root', pass: 'as009988' }
+            ];
+            setOltDevices(defaults);
+        })();
+
+        function openOltModal() {
+            try {
+                const m = document.getElementById('oltModal');
+                if (!m) return console.warn('OLT modal not found');
+                m.classList.remove('hidden');
+                m.style.display = 'flex';
+                renderOltList();
+                renderConfigOltList();
+                setTimeout(() => { const f = document.getElementById('oltName'); if (f) f.focus(); }, 120);
+                console.debug('OLT modal opened');
+            } catch (e) { console.error('openOltModal error', e); }
+        }
+        function closeOltModal() {
+            try {
+                const m = document.getElementById('oltModal'); if (!m) return; m.classList.add('hidden'); m.style.display = 'none';
+            } catch (e) { console.error('closeOltModal error', e); }
+        }
+
+        function switchOltTab(tab) {
+            const tabWeb = document.getElementById('tabContent-web');
+            const tabSsh = document.getElementById('tabContent-ssh');
+            const btnWeb = document.getElementById('tabBtn-web');
+            const btnSsh = document.getElementById('tabBtn-ssh');
+
+            if (tab === 'web') {
+                tabWeb.classList.remove('hidden');
+                tabWeb.classList.add('flex');
+                tabSsh.classList.add('hidden');
+
+                btnWeb.classList.replace('bg-slate-800', 'bg-cyan-600');
+                btnWeb.classList.replace('text-slate-400', 'text-white');
+                btnSsh.classList.replace('bg-cyan-600', 'bg-slate-800');
+                btnSsh.classList.replace('text-white', 'text-slate-400');
+            } else {
+                tabSsh.classList.remove('hidden');
+                tabWeb.classList.add('hidden');
+                tabWeb.classList.remove('flex');
+
+                btnSsh.classList.replace('bg-slate-800', 'bg-cyan-600');
+                btnSsh.classList.replace('text-slate-400', 'text-white');
+                btnWeb.classList.replace('bg-cyan-600', 'bg-slate-800');
+                btnWeb.classList.replace('text-white', 'text-slate-400');
+            }
+        }
+
+        function renderOltList() {
+            const box = document.getElementById('oltList'); box.innerHTML = '';
+            const devices = getOltDevices();
+            devices.forEach(d => {
+                const row = document.createElement('div');
+                row.className = 'p-2 bg-slate-800/60 border border-slate-700 rounded flex items-center justify-between';
+                const left = document.createElement('div');
+                left.innerHTML = `<strong>${escapeHtml(d.name)}</strong><div class='text-[11px] text-slate-400'>IP: <a href='#' class='olt-ip-link'>${escapeHtml(d.ip)}</a> — ${escapeHtml(d.area)}</div>`;
+                const right = document.createElement('div'); right.className = 'flex gap-2';
+                const btnConnect = document.createElement('button'); btnConnect.className = 'px-2 py-0.5 text-[11px] bg-emerald-600 rounded'; btnConnect.innerText = 'Connect';
+                const btnCopy = document.createElement('button'); btnCopy.className = 'px-2 py-0.5 text-[11px] bg-slate-700 rounded'; btnCopy.innerText = 'Copy';
+                const btnEdit = document.createElement('button'); btnEdit.className = 'px-2 py-0.5 text-[11px] bg-amber-600 rounded'; btnEdit.innerText = 'Edit';
+                const btnDelete = document.createElement('button'); btnDelete.className = 'px-2 py-0.5 text-[11px] bg-rose-600 rounded'; btnDelete.innerText = 'Hapus';
+                btnConnect.addEventListener('click', () => connectOlt(d));
+                btnCopy.addEventListener('click', () => copyOltCreds(d));
+                btnEdit.addEventListener('click', () => editOlt(d.id));
+                btnDelete.addEventListener('click', () => { if (confirm('Hapus OLT ini?')) deleteOlt(d.id); });
+                // IP link opens as well
+                left.querySelectorAll('.olt-ip-link').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); connectOlt(d); }));
+                right.appendChild(btnConnect); right.appendChild(btnCopy); right.appendChild(btnEdit); right.appendChild(btnDelete);
+                row.appendChild(left); row.appendChild(right);
+                box.appendChild(row);
+            });
+        }
+
+        function saveOltFromForm() {
+            try {
+                const idRaw = document.getElementById('oltId').value.trim();
+                const id = idRaw ? parseInt(idRaw) : null;
+                const name = document.getElementById('oltName').value.trim();
+                const area = document.getElementById('oltArea').value.trim();
+                const ip = document.getElementById('oltIp').value.trim();
+                const user = document.getElementById('oltUser').value.trim();
+                const pass = document.getElementById('oltPass').value.trim();
+                if (!name || !ip) { alert('Nama dan IP wajib diisi'); return; }
+                const list = getOltDevices();
+                if (id) {
+                    const idx = list.findIndex(x => x.id === id);
+                    if (idx >= 0) { list[idx] = { id, name, area, ip, user, pass }; }
+                    else { list.push({ id, name, area, ip, user, pass }); }
+                } else {
+                    const newId = list.length ? Math.max(...list.map(x => x.id)) + 1 : 1;
+                    list.push({ id: newId, name, area, ip, user, pass });
+                }
+                setOltDevices(list);
+                clearOltForm(); renderOltList();
+            } catch (e) { alert('Gagal menyimpan OLT: ' + e.message); }
+        }
+
+        function clearOltForm() { document.getElementById('oltId').value = ''; document.getElementById('oltName').value = ''; document.getElementById('oltArea').value = ''; document.getElementById('oltIp').value = ''; document.getElementById('oltUser').value = ''; document.getElementById('oltPass').value = ''; }
+
+        function editOlt(id) { const list = getOltDevices(); const d = list.find(x => x.id === id); if (!d) return; document.getElementById('oltId').value = d.id; document.getElementById('oltName').value = d.name; document.getElementById('oltArea').value = d.area; document.getElementById('oltIp').value = d.ip; document.getElementById('oltUser').value = d.user; document.getElementById('oltPass').value = d.pass; }
+
+        function deleteOlt(id) { const list = getOltDevices().filter(x => x.id !== id); setOltDevices(list); renderOltList(); }
+
+        function connectOlt(device) {
+            try {
+                const { ip, user, pass } = device;
+                const authUrl = `http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${ip}/`;
+                const win = window.open(authUrl, '_blank');
+                if (!win) { alert('Popup blocked. Please allow popups for this site.'); return; }
+                setTimeout(() => {
+                    try {
+                        const html = `<!doctype html><meta charset="utf-8"><title>OLT ${ip}</title><style>body{font-family:sans-serif;padding:20px;background:#0f172a;color:#e6eef8}</style><h2>OLT ${ip}</h2><p>User: <strong>${user}</strong><br>Pass: <strong>${pass}</strong></p><p><a href='http://${ip}/' target='_blank' style='color:#06b6d4'>Open device (no-auth)</a></p><p>Use the credentials above if prompted by the device.</p>`;
+                        win.document.open(); win.document.write(html); win.document.close();
+                    } catch (e) { }
+                }, 300);
+            } catch (e) { alert('Failed to open OLT: ' + (e && e.message)); }
+        }
+
+        function copyOltCreds(device) { const text = `Host: ${device.ip}\nUser: ${device.user}\nPass: ${device.pass}`; navigator.clipboard.writeText(text).then(() => alert('Credentials copied to clipboard')).catch(() => alert('Copy failed')); }
+
+        // Seed default KB entries on first run
+        (function seedKBDefaults() { const existing = getKB(); if (existing.length) return; const defaults = [{ id: 1, title: 'Cara Reset Router', text: '1. Cabut adaptor selama 30 detik\n2. Pasang kembali\n3. Jika masih bermasalah, laporkan ke teknis.' }, { id: 2, title: 'Reset Password WiFi', text: rawTemplates.gantiPass }, { id: 3, title: 'Cek Tagihan', text: rawTemplates.financeIsolir }]; setKB(defaults); })();
+        const configOltData = [
+            { name: "OLT 1", entitas: "UNR", ip: "192.168.9.3", user: "upaznet", pass: "tetap8ersinar" },
+            { name: "OLT 1 C300 (REJOWINANGUN)", entitas: "UNR", ip: "10.2.10.3", user: "upaznet", pass: "tetap8ersinar" },
+            { name: "OLT C600 UNR", entitas: "UNR", ip: "10.2.10.2", user: "upaznet", pass: "tetap8ersinar" },
+            { name: "OLT 1-PDG UHO", entitas: "UHO", ip: "192.168.101.10", user: "upaznet", pass: "tetap8ersinar" },
+            { name: "OLT-MDN", entitas: "UBL", ip: "192.168.100.2", user: "NOC", pass: "tetap5emangat" },
+            { name: "OLT 1-BJ UNB", entitas: "UNB", ip: "192.168.101.3", user: "unb", pass: "tetap5olid" },
+            { name: "OLT UCD", entitas: "UNB", ip: "192.168.102.2", user: "noc", pass: "noc123" },
+            { name: "OLT C300 UGR", entitas: "UGR", ip: "10.4.20.4", user: "mustofa", pass: "selalubarokah03" },
+            { name: "OLT C320 BBD UGR", entitas: "UGR", ip: "10.4.20.26", user: "upaznet", pass: "tetap8ersinar" }
+        ];
+
+        function renderConfigOltList() {
+            const tbody = document.getElementById('configOltTableBody');
+            tbody.innerHTML = '';
+            configOltData.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/60 transition-colors';
+
+                tr.innerHTML = `
+                    <td class="p-2 font-medium text-slate-200">${escapeHtml(d.name)}</td>
+                    <td class="p-2 text-slate-400">${escapeHtml(d.entitas)}</td>
+                    <td class="p-2">
+                        <button onclick="connectConfigOlt('${d.ip}', '${d.user}', '${d.pass}')" 
+                            class="text-cyan-400 hover:text-cyan-300 underline font-mono font-bold" title="Click to auto-connect via SSH">
+                            ${escapeHtml(d.ip)}
+                        </button>
+                    </td>
+                    <td class="p-2 text-slate-400 font-mono">${escapeHtml(d.user)}</td>
+                    <td class="p-2 text-slate-500 font-mono select-all">${escapeHtml(d.pass)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+
+
+        async function connectConfigOlt(ip, user, pass) {
+            console.log(`Connecting to ${ip} as ${user}...`);
+            try {
+                const res = await fetch('/api/ssh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip, user, pass })
+                });
+                const result = await res.json();
+                if (!result.ok) throw new Error(result.error || 'Gagal menyambungkan SSH');
+                console.log('SSH connection command sent successfully.');
+            } catch (err) {
+                alert('Gagal: ' + err.message);
+            }
+        }
+
+        // ====================================================
+        //   BROADCAST — Gangguan Massal ke Pelanggan
+        // ====================================================
+        const BC_CONTACTS_KEY = 'upaz_bc_contacts';
+        const BC_LOG_KEY      = 'upaz_bc_log';
+        const BC_API_KEY      = 'upaz_bc_apikey';    // localStorage key for token
+        const BC_PROVIDER_KEY = 'upaz_bc_provider';  // 'fonnte' | 'wablas' | 'zenziva' | 'wa'
+
+        // ── API config helpers ────────────────────────────────
+        function getBcToken()    { return localStorage.getItem(BC_API_KEY)      || ''; }
+        function getBcProvider() { return localStorage.getItem(BC_PROVIDER_KEY) || 'fonnte'; }
+        function saveBcApiConfig() {
+            const token    = document.getElementById('bcApiToken').value.trim();
+            const provider = document.getElementById('bcApiProvider').value;
+            localStorage.setItem(BC_API_KEY, token);
+            localStorage.setItem(BC_PROVIDER_KEY, provider);
+            renderBcApiStatus();
+            showBcToast(token ? '✅ Token API tersimpan' : '⚠️ Token dikosongkan — mode WA Link aktif', token ? 'emerald' : 'amber');
+        }
+        function clearBcApiConfig() {
+            localStorage.removeItem(BC_API_KEY);
+            localStorage.removeItem(BC_PROVIDER_KEY);
+            document.getElementById('bcApiToken').value = '';
+            document.getElementById('bcApiProvider').value = 'fonnte';
+            renderBcApiStatus();
+            showBcToast('🔗 Token dihapus — fallback ke WA Link', 'amber');
+        }
+        function renderBcApiStatus() {
+            const token = getBcToken();
+            const provider = getBcProvider();
+            const badge = document.getElementById('bcApiStatusBadge');
+            const tokenInput = document.getElementById('bcApiToken');
+            const providerSel = document.getElementById('bcApiProvider');
+            if (badge) {
+                badge.textContent = token ? `✅ API ${provider.toUpperCase()} aktif` : '🔗 Mode WA Link (tanpa API)';
+                badge.className = token
+                    ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-800/60 text-emerald-300 border border-emerald-700/50'
+                    : 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-400 border border-slate-600/50';
+            }
+            if (tokenInput) tokenInput.value = token;
+            if (providerSel) providerSel.value = provider;
+            // update kirim button label
+            updateBcSendBtn();
+        }
+        function toggleBcApiPanel() {
+            const p = document.getElementById('bcApiPanel');
+            p.classList.toggle('hidden');
+            if (!p.classList.contains('hidden')) renderBcApiStatus();
+        }
+
+        // ── Toast helper ──────────────────────────────────────
+        function showBcToast(msg, color) {
+            const toast = document.getElementById('bcToast');
+            if (!toast) return;
+            const colors = { emerald: 'bg-emerald-700/90', amber: 'bg-amber-700/90', rose: 'bg-rose-700/90' };
+            toast.className = `transition-opacity duration-500 text-center text-xs font-bold text-white py-1.5 px-4 ${colors[color] || colors.emerald}`;
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+        }
+
+        // ── Provider: build request options ──────────────────
+        // Returns { url, options } ready for fetch(), or null if no token
+        function buildApiRequest(phone, message) {
+            const token    = getBcToken();
+            const provider = getBcProvider();
+            if (!token) return null;
+
+            // normalise phone: strip leading + and spaces, keep digits only
+            let p = phone.replace(/[\s\-+]/g, '');
+            if (p.startsWith('0')) p = '62' + p.slice(1);
+
+            // Bug 1 fix: setiap case dibungkus block {} agar `const` tidak leak ke scope switch
+            switch (provider) {
+                case 'fonnte': {
+                    // Docs: https://fonnte.com/docs
+                    return {
+                        url: 'https://api.fonnte.com/send',
+                        options: {
+                            method: 'POST',
+                            headers: { 'Authorization': token, 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ target: p, message })
+                        }
+                    };
+                }
+                case 'wablas': {
+                    // Docs: https://wablas.com/documentation
+                    return {
+                        url: 'https://solo.wablas.com/api/send-message',
+                        options: {
+                            method: 'POST',
+                            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phone: p, message })
+                        }
+                    };
+                }
+                case 'zenziva': {
+                    // Docs: https://www.zenziva.id/api — token format "userkey:passkey"
+                    const [userkey, passkey] = token.split(':');
+                    return {
+                        url: 'https://console.zenziva.net/wamasking/api/sendWA/',
+                        options: {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ userkey: userkey || '', passkey: passkey || '', to: p, message })
+                        }
+                    };
+                }
+                case 'starsender': {
+                    // Docs: https://starsender.online/docs
+                    return {
+                        url: 'https://api.starsender.online/api/send',
+                        options: {
+                            method: 'POST',
+                            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ messageType: 'text', to: p, body: message })
+                        }
+                    };
+                }
+                default:
+                    return null;
+            }
+        }
+
+        // ── Test API connection ───────────────────────────────
+        async function testBcApi() {
+            const token = document.getElementById('bcApiToken').value.trim();
+            if (!token) { showBcToast('⚠️ Isi token terlebih dahulu', 'amber'); return; }
+            const testPhone = prompt('Masukkan nomor WA Anda sendiri untuk test kirim (format: 08xxx atau 628xxx):');
+            if (!testPhone) return;
+            // temporarily save
+            localStorage.setItem(BC_API_KEY, token);
+            localStorage.setItem(BC_PROVIDER_KEY, document.getElementById('bcApiProvider').value);
+            const req = buildApiRequest(testPhone, '🧪 Test koneksi API Broadcast Upaznet Helpdesk — abaikan pesan ini.');
+            if (!req) { showBcToast('❌ Provider tidak dikenali', 'rose'); return; }
+            const testBtn = document.getElementById('bcApiTestBtn');
+            testBtn.disabled = true; testBtn.textContent = 'Testing...';
+            try {
+                const res = await fetch(req.url, req.options);
+                const data = await res.json().catch(() => ({}));
+                const ok = res.ok || data.status === true || data.status === 'success';
+                showBcToast(ok ? '✅ Test berhasil! Cek WA Anda.' : `⚠️ Respons: ${JSON.stringify(data).slice(0, 80)}`, ok ? 'emerald' : 'amber');
+            } catch (err) {
+                showBcToast(`❌ Gagal: ${err.message} (CORS mungkin diblokir browser — coba via server)`, 'rose');
+            } finally {
+                testBtn.disabled = false; testBtn.textContent = '🧪 Test Kirim';
+            }
+        }
+
+        function getBcContacts() { try { return JSON.parse(localStorage.getItem(BC_CONTACTS_KEY) || 'null') || []; } catch (e) { return []; } }
+        function setBcContacts(list) { localStorage.setItem(BC_CONTACTS_KEY, JSON.stringify(list)); }
+        function getBcLog() { try { return JSON.parse(localStorage.getItem(BC_LOG_KEY) || 'null') || []; } catch (e) { return []; } }
+        function setBcLog(list) { localStorage.setItem(BC_LOG_KEY, JSON.stringify(list)); }
+
+        function openBroadcast() {
+            document.getElementById('bcModal').classList.remove('hidden');
+            renderBcContacts();
+            renderBcLog();
+            updateBcSendBtn();
+            renderBcApiStatus();
+        }
+        function closeBroadcast() { document.getElementById('bcModal').classList.add('hidden'); }
+
+        // ── Area filter list ──────────────────────────────────
+        function getBcAreas() {
+            const areas = [...new Set(getBcContacts().map(c => c.area).filter(Boolean))].sort();
+            return areas;
+        }
+
+        function refreshBcAreaFilter() {
+            const sel = document.getElementById('bcAreaFilter');
+            if (!sel) return;
+            const current = sel.value;
+            const areas = getBcAreas();
+            sel.innerHTML = '<option value="">Semua Area</option>' +
+                areas.map(a => `<option value="${escapeHtml(a)}" ${a === current ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('');
+        }
+
+        // ── Render contact list ───────────────────────────────
+        function renderBcContacts() {
+            const list = getBcContacts();
+            const box = document.getElementById('bcContactList');
+            const q = (document.getElementById('bcSearch')?.value || '').toLowerCase().trim();
+            const areaF = document.getElementById('bcAreaFilter')?.value || '';
+            box.innerHTML = '';
+
+            refreshBcAreaFilter();
+
+            let filtered = list;
+            if (areaF) filtered = filtered.filter(c => c.area === areaF);
+            if (q) filtered = filtered.filter(c =>
+                c.name.toLowerCase().includes(q) || c.phone.includes(q) || (c.area || '').toLowerCase().includes(q)
+            );
+
+            if (!filtered.length) {
+                box.innerHTML = `<div class="text-xs text-slate-400 p-3 text-center">${list.length ? 'Tidak ada kontak yang cocok.' : 'Belum ada kontak. Tambahkan dulu.'}</div>`;
+                updateBcSendBtn();
+                return;
+            }
+
+            filtered.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'bc-contact-row flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-700/40 transition';
+                div.dataset.phone = c.phone;
+                div.innerHTML = `
+                    <input type="checkbox" class="bc-chk accent-cyan-500 shrink-0" value="${escapeHtml(c.phone)}" data-name="${escapeHtml(c.name)}" onchange="updateBcSendBtn()">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-xs truncate">${escapeHtml(c.name)}</div>
+                        <div class="text-[11px] text-slate-400 flex gap-2">
+                            <span>${escapeHtml(c.phone)}</span>
+                            ${c.area ? `<span class="text-slate-500">· ${escapeHtml(c.area)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="editBcContact('${escapeHtml(c.phone)}')" title="Edit" class="text-amber-400 hover:text-amber-300 text-[11px] px-1">✏️</button>
+                        <button onclick="deleteBcContact('${escapeHtml(c.phone)}')" title="Hapus" class="text-rose-400 hover:text-rose-300 text-[11px] px-1">✕</button>
+                    </div>`;
+                box.appendChild(div);
+            });
+            updateBcSendBtn();
+        }
+
+        // ── Add / Edit contact ────────────────────────────────
+        function saveBcContact() {
+            const name = document.getElementById('bcContactName').value.trim();
+            const phone = document.getElementById('bcContactPhone').value.trim().replace(/[\s\-+]/g, '');
+            const area = document.getElementById('bcContactArea').value.trim();
+            if (!name || !phone) { alert('Nama dan nomor WA wajib diisi'); return; }
+            const editingPhone = document.getElementById('bcContactName').dataset.editPhone || '';
+            const list = getBcContacts();
+            if (editingPhone) {
+                // update existing
+                const idx = list.findIndex(c => c.phone === editingPhone);
+                if (idx >= 0) list[idx] = { name, phone, area };
+                else list.push({ name, phone, area });
+                delete document.getElementById('bcContactName').dataset.editPhone;
+                document.getElementById('bcSaveContactBtn').textContent = '+ Tambah';
+            } else {
+                if (list.some(c => c.phone === phone)) { alert('Nomor ' + phone + ' sudah ada dalam daftar'); return; }
+                list.push({ name, phone, area });
+            }
+            setBcContacts(list);
+            document.getElementById('bcContactName').value = '';
+            document.getElementById('bcContactPhone').value = '';
+            document.getElementById('bcContactArea').value = '';
+            renderBcContacts();
+        }
+
+        function editBcContact(phone) {
+            const c = getBcContacts().find(x => x.phone === phone);
+            if (!c) return;
+            document.getElementById('bcContactName').value = c.name;
+            document.getElementById('bcContactPhone').value = c.phone;
+            document.getElementById('bcContactArea').value = c.area || '';
+            document.getElementById('bcContactName').dataset.editPhone = phone;
+            document.getElementById('bcSaveContactBtn').textContent = '💾 Simpan';
+            document.getElementById('bcContactName').focus();
+        }
+
+        function cancelEditBcContact() {
+            document.getElementById('bcContactName').value = '';
+            document.getElementById('bcContactPhone').value = '';
+            document.getElementById('bcContactArea').value = '';
+            delete document.getElementById('bcContactName').dataset.editPhone;
+            document.getElementById('bcSaveContactBtn').textContent = '+ Tambah';
+        }
+
+        function deleteBcContact(phone) {
+            setBcContacts(getBcContacts().filter(c => c.phone !== phone));
+            renderBcContacts();
+        }
+
+        // ── Bulk import ───────────────────────────────────────
+        function openBcImport() {
+            document.getElementById('bcImportPanel').classList.toggle('hidden');
+            document.getElementById('bcImportText').focus();
+        }
+
+        function runBcImport() {
+            const raw = document.getElementById('bcImportText').value.trim();
+            if (!raw) return;
+            const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+            const list = getBcContacts();
+            let added = 0, skipped = 0;
+            lines.forEach(line => {
+                // support: Nama|Nomor|Area  OR  Nama,Nomor,Area  OR  just Nomor
+                const parts = line.split(/[|,\t]/).map(p => p.trim());
+                let name, phone, area;
+                if (parts.length >= 2) {
+                    [name, phone, area] = parts;
+                } else {
+                    phone = parts[0]; name = phone; area = '';
+                }
+                phone = (phone || '').replace(/[\s\-+]/g, '');
+                if (!phone || !name) { skipped++; return; }
+                if (list.some(c => c.phone === phone)) { skipped++; return; }
+                list.push({ name, phone, area: area || '' });
+                added++;
+            });
+            setBcContacts(list);
+            document.getElementById('bcImportText').value = '';
+            document.getElementById('bcImportPanel').classList.add('hidden');
+            renderBcContacts();
+            alert(`Import selesai: ${added} kontak ditambahkan, ${skipped} dilewati (duplikat/kosong).`);
+        }
+
+        // ── Select helpers ────────────────────────────────────
+        function selectAllBcContacts(checked) {
+            document.querySelectorAll('.bc-chk').forEach(cb => { cb.checked = checked; });
+            updateBcSendBtn();
+        }
+
+        function selectBcByArea() {
+            const areaF = document.getElementById('bcAreaFilter')?.value || '';
+            if (!areaF) { selectAllBcContacts(true); return; }
+            document.querySelectorAll('.bc-chk').forEach(cb => {
+                const row = cb.closest('.bc-contact-row');
+                if (!row) return;
+                const phone = row.dataset.phone;
+                const c = getBcContacts().find(x => x.phone === phone);
+                cb.checked = c && c.area === areaF;
+            });
+            updateBcSendBtn();
+        }
+
+        function updateBcSendBtn() {
+            const n = document.querySelectorAll('.bc-chk:checked').length;
+            const total = document.querySelectorAll('.bc-chk').length;
+            const btn = document.getElementById('bcSendBtn');
+            if (!btn) return;
+            const hasApi = !!getBcToken();
+            const via = hasApi ? `via API ${getBcProvider().toUpperCase()}` : 'via WA Link';
+            btn.innerHTML = n
+                ? `<i class="fa-solid fa-paper-plane"></i> Kirim ke <span class="bg-white/20 rounded px-1.5 font-black">${n}</span> Kontak ${via}`
+                : `<i class="fa-solid fa-paper-plane"></i> Kirim Broadcast ${via}`;
+            btn.disabled = n === 0;
+            btn.className = n
+                ? 'w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2'
+                : 'w-full bg-slate-700 text-slate-400 cursor-not-allowed font-black py-2.5 rounded-xl text-sm flex items-center justify-center gap-2';
+
+            const counter = document.getElementById('bcSelCounter');
+            if (counter) counter.textContent = `${n} / ${total} dipilih`;
+        }
+
+        // ── Set template (with processText) ───────────────────
+        function setBcTemplate(key) {
+            document.getElementById('bcMessage').value = processText(rawTemplates[key] || '');
+            // highlight active button
+            document.querySelectorAll('.bc-tpl-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-offset-slate-900', 'ring-rose-400'));
+            const active = document.querySelector(`.bc-tpl-btn[data-key="${key}"]`);
+            if (active) active.classList.add('ring-2', 'ring-offset-1', 'ring-offset-slate-900', 'ring-rose-400');
+        }
+
+        // ── Send — otomatis via API jika token tersedia ───────
+        function sendBroadcast() {
+            const msg = document.getElementById('bcMessage').value.trim();
+            if (!msg) { alert('Pesan broadcast kosong!'); return; }
+            const selected = Array.from(document.querySelectorAll('.bc-chk:checked'));
+            if (!selected.length) { alert('Pilih minimal satu kontak!'); return; }
+
+            const useApi = !!getBcToken();
+            const btn = document.getElementById('bcSendBtn');
+            btn.disabled = true;
+
+            const log = getBcLog();
+            const ts = new Date().toLocaleString('id-ID');
+            let idx = 0, successCount = 0, failCount = 0;
+
+            // Bug 3 fix: sendNext adalah async — harus dipanggil dengan await agar
+            // sequential delay benar-benar menunggu sebelum lanjut ke kontak berikutnya
+            async function sendNext() {
+                if (idx >= selected.length) {
+                    setBcLog(log.slice(0, 300));
+                    renderBcLog();
+                    btn.disabled = false;
+                    updateBcSendBtn();
+                    const summary = useApi
+                        ? `✅ Terkirim: ${successCount} · ❌ Gagal: ${failCount}`
+                        : `🔗 ${selected.length} tab WA dibuka`;
+                    showBcToast(summary, failCount > 0 ? 'amber' : 'emerald');
+                    return;
+                }
+
+                const cb = selected[idx++];
+                const rawPhone = cb.value;
+                const name = cb.dataset.name;
+
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim ${idx} / ${selected.length}...`;
+
+                if (useApi) {
+                    // ── MODE API: kirim via BSP, tidak buka tab ──────
+                    const req = buildApiRequest(rawPhone, msg);
+                    let status = 'ok';
+                    try {
+                        const res = await fetch(req.url, req.options);
+                        const data = await res.json().catch(() => ({}));
+                        const ok = res.ok || data.status === true || data.status === 'success';
+                        if (ok) { successCount++; } else { failCount++; status = 'fail'; }
+                    } catch (e) { failCount++; status = 'error'; }
+                    log.unshift({ ts, name, phone: rawPhone, msg, via: getBcProvider(), status });
+                    // delay antar API call, lalu await sendNext berikutnya
+                    await new Promise(r => setTimeout(r, 350));
+                    await sendNext();
+                } else {
+                    // ── MODE WA LINK: buka tab browser seperti sebelumnya
+                    let phone = rawPhone.replace(/[\s\-+]/g, '');
+                    if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+                    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+                    log.unshift({ ts, name, phone: rawPhone, msg, via: 'wa', status: 'opened' });
+                    // delay antar tab WA
+                    await new Promise(r => setTimeout(r, 900));
+                    await sendNext();
+                }
+            }
+            sendNext();
+        }
+
+        // ── Re-send from log ──────────────────────────────────
+        async function resendFromLog(phone, msg) {
+            if (getBcToken()) {
+                const req = buildApiRequest(phone, msg);
+                if (req) {
+                    try {
+                        await fetch(req.url, req.options);
+                        showBcToast(`↩ Dikirim ulang ke ${phone}`, 'emerald');
+                    } catch (e) { showBcToast(`❌ Gagal kirim ulang: ${e.message}`, 'rose'); }
+                    return;
+                }
+            }
+            let p = phone.replace(/[\s\-+]/g, '');
+            if (p.startsWith('0')) p = '62' + p.slice(1);
+            window.open(`https://api.whatsapp.com/send?phone=${p}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // ── Render log ────────────────────────────────────────
+        function renderBcLog() {
+            const log = getBcLog();
+            const box = document.getElementById('bcLogList');
+            box.innerHTML = '';
+            if (!log.length) { box.innerHTML = '<div class="text-xs text-slate-400 p-3 text-center">Belum ada log.</div>'; return; }
+            log.slice(0, 50).forEach(l => {
+                // Bug 7 fix: guard l.msg undefined (log lama tanpa field msg)
+                const safeMsg = l.msg || '';
+                const statusMap = {
+                    ok:     '<span class="text-emerald-400 font-bold">✅ OK</span>',
+                    fail:   '<span class="text-rose-400 font-bold">❌ Gagal</span>',
+                    error:  '<span class="text-rose-400 font-bold">❌ Error</span>',
+                    opened: '<span class="text-cyan-400">🔗 WA</span>',
+                };
+                const statusTag = statusMap[l.status] || '';
+                const viaTag = l.via && l.via !== 'wa'
+                    ? `<span class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/40 text-[9px] px-1 rounded">${escapeHtml(l.via.toUpperCase())}</span>`
+                    : `<span class="bg-slate-700/60 text-slate-400 text-[9px] px-1 rounded">WA</span>`;
+                const div = document.createElement('div');
+                div.className = 'flex items-start gap-2 text-[11px] px-2 py-1.5 border-b border-slate-800/80 hover:bg-slate-800/40';
+                // Bug 2 fix: simpan msg asli (tidak di-escape) di dataset untuk resend,
+                // gunakan JSON.stringify langsung dari safeMsg (bukan dari hasil escapeHtml)
+                div.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex gap-1.5 items-center flex-wrap">
+                            <span class="text-slate-500">${escapeHtml(l.ts)}</span>
+                            ${viaTag} ${statusTag}
+                            <span class="font-semibold text-slate-200">${escapeHtml(l.name)}</span>
+                            <span class="text-slate-400">${escapeHtml(l.phone)}</span>
+                        </div>
+                        <div class="text-slate-400 truncate mt-0.5" title="${escapeHtml(safeMsg)}">${escapeHtml(safeMsg.slice(0, 60))}${safeMsg.length > 60 ? '…' : ''}</div>
+                    </div>
+                    <button onclick="resendFromLog('${escapeHtml(l.phone)}', ${JSON.stringify(safeMsg)})" title="Kirim ulang" class="shrink-0 text-cyan-400 hover:text-cyan-300 mt-0.5">↩</button>`;
+                box.appendChild(div);
+            });
+        }
+
+        function clearBcLog() { if (!confirm('Hapus semua log broadcast?')) return; setBcLog([]); renderBcLog(); }
+
+        // ── Seed default contacts ─────────────────────────────
+        (function seedBcDefaults() {
+            const existing = getBcContacts();
+            if (existing.length) return;
+            setBcContacts([
+                { name: 'Contoh Pelanggan A', phone: '081234567890', area: 'Area Blitar' },
+                { name: 'Contoh Pelanggan B', phone: '082345678901', area: 'Area Kediri' },
+                { name: 'Contoh Pelanggan C', phone: '083456789012', area: 'Area Blitar' }
+            ]);
+        })();
+    </script>
+
+    <!-- ===== BROADCAST MODAL ===== -->
+    <div id="bcModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-black/60" onclick="closeBroadcast()"></div>
+        <div class="relative w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-10 flex flex-col my-4 overflow-hidden">
+
+            <!-- ── Modal header ── -->
+            <div class="flex items-center justify-between px-5 py-3 bg-rose-700/20 border-b border-slate-700/70">
+                <h3 class="font-black text-sm flex items-center gap-2 text-white">
+                    <i class="fa-solid fa-bullhorn text-rose-400"></i> Broadcast Gangguan ke Pelanggan
+                </h3>
+                <button onclick="closeBroadcast()" class="text-slate-400 hover:text-white text-lg leading-none px-2">✕</button>
+            </div>
+
+            <!-- ── Toast notification ── -->
+            <div id="bcToast" style="opacity:0" class="transition-all duration-500 text-center text-xs font-bold text-white py-1.5 px-4 bg-emerald-700/90">
+                ✅ Broadcast berhasil dikirim
+            </div>
+
+            <!-- ── API Settings bar ── -->
+            <div class="flex items-center gap-3 px-5 py-2 bg-slate-800/60 border-b border-slate-700/50">
+                <span id="bcApiStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-400 border border-slate-600/50">
+                    🔗 Mode WA Link (tanpa API)
+                </span>
+                <button onclick="toggleBcApiPanel()"
+                    class="text-[11px] text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-gear text-[10px]"></i> Pengaturan API
+                </button>
+            </div>
+
+            <!-- ── API config panel (collapsed by default) ── -->
+            <div id="bcApiPanel" class="hidden border-b border-slate-700/50 bg-slate-800/40 px-5 py-3 space-y-3">
+                <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Konfigurasi API BSP</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Provider -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">Provider</label>
+                        <select id="bcApiProvider"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-amber-500">
+                            <option value="fonnte">Fonnte (fonnte.com)</option>
+                            <option value="wablas">Wablas (wablas.com)</option>
+                            <option value="zenziva">Zenziva — token: userkey:passkey</option>
+                            <option value="starsender">Starsender (starsender.online)</option>
+                        </select>
+                    </div>
+                    <!-- Token -->
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] text-slate-400 block mb-1">Token / API Key</label>
+                        <input id="bcApiToken" type="password" placeholder="Paste token di sini..."
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-amber-500 font-mono" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 items-center">
+                    <button onclick="saveBcApiConfig()"
+                        class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-xs transition">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Token
+                    </button>
+                    <button id="bcApiTestBtn" onclick="testBcApi()"
+                        class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition">
+                        🧪 Test Kirim
+                    </button>
+                    <button onclick="clearBcApiConfig()"
+                        class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-1.5 rounded-lg text-xs transition">
+                        🗑 Hapus Token
+                    </button>
+                    <span class="text-[10px] text-slate-500 ml-auto">Token disimpan di localStorage browser — tidak dikirim ke server manapun</span>
+                </div>
+                <!-- Provider cheatsheet -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-2 pt-1 border-t border-slate-700/40">
+                    <a href="https://fonnte.com" target="_blank" class="text-[10px] bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 hover:border-amber-600/50 transition">
+                        <div class="font-bold text-amber-300">Fonnte</div>
+                        <div class="text-slate-400 mt-0.5">Rp 50rb/bln · Token 1 kolom · Mudah</div>
+                    </a>
+                    <a href="https://wablas.com" target="_blank" class="text-[10px] bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 hover:border-amber-600/50 transition">
+                        <div class="font-bold text-amber-300">Wablas</div>
+                        <div class="text-slate-400 mt-0.5">Rp 99rb/bln · Token 1 kolom</div>
+                    </a>
+                    <a href="https://zenziva.id" target="_blank" class="text-[10px] bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 hover:border-amber-600/50 transition">
+                        <div class="font-bold text-amber-300">Zenziva</div>
+                        <div class="text-slate-400 mt-0.5">Token format: <code class="text-amber-400">userkey:passkey</code></div>
+                    </a>
+                    <a href="https://starsender.online" target="_blank" class="text-[10px] bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 hover:border-amber-600/50 transition">
+                        <div class="font-bold text-amber-300">Starsender</div>
+                        <div class="text-slate-400 mt-0.5">Token 1 kolom · Gratis trial</div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-700/60 flex-1">
+
+                <!-- ════ LEFT (3 cols): Pesan ════ -->
+                <div class="md:col-span-3 p-4 space-y-3">
+
+                    <!-- Template quick-insert -->
+                    <div>
+                        <div class="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1.5">Template Cepat</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button data-key="massPln" onclick="setBcTemplate('massPln')"
+                                class="bc-tpl-btn text-[11px] bg-amber-950/70 hover:bg-amber-900 border border-amber-700/60 text-amber-300 px-2.5 py-1 rounded-lg font-semibold transition">⚡ Pemadaman PLN</button>
+                            <button data-key="massBts" onclick="setBcTemplate('massBts')"
+                                class="bc-tpl-btn text-[11px] bg-rose-950/70 hover:bg-rose-900 border border-rose-700/60 text-rose-300 px-2.5 py-1 rounded-lg font-semibold transition">📡 Gangguan BTS</button>
+                            <button data-key="massBackbone" onclick="setBcTemplate('massBackbone')"
+                                class="bc-tpl-btn text-[11px] bg-orange-950/70 hover:bg-orange-900 border border-orange-700/60 text-orange-300 px-2.5 py-1 rounded-lg font-semibold transition">🚧 Perbaikan Backbone</button>
+                            <button data-key="routerDown" onclick="setBcTemplate('routerDown')"
+                                class="bc-tpl-btn text-[11px] bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-300 px-2.5 py-1 rounded-lg font-semibold transition">🔌 Router Down</button>
+                            <button data-key="antenaDown" onclick="setBcTemplate('antenaDown')"
+                                class="bc-tpl-btn text-[11px] bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-300 px-2.5 py-1 rounded-lg font-semibold transition">📡 Antena Down</button>
+                        </div>
+                    </div>
+
+                    <!-- Message textarea -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Isi Pesan</label>
+                            <button onclick="document.getElementById('bcMessage').value=''" class="text-[10px] text-slate-500 hover:text-slate-300">Bersihkan</button>
+                        </div>
+                        <textarea id="bcMessage" rows="9"
+                            placeholder="Ketik atau pilih template di atas...&#10;&#10;Contoh: Mohon maaf, saat ini terjadi gangguan jaringan di area Anda karena pemadaman PLN. Sedang dalam perbaikan. 🙏"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-emerald-200 font-mono focus:outline-none focus:border-rose-500 resize-none custom-scrollbar"></textarea>
+                    </div>
+
+                    <!-- Send button -->
+                    <button id="bcSendBtn" onclick="sendBroadcast()" disabled
+                        class="w-full bg-slate-700 text-slate-400 cursor-not-allowed font-black py-2.5 rounded-xl text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Broadcast via WA
+                    </button>
+
+                    <!-- Log -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Log Pengiriman</span>
+                            <button onclick="clearBcLog()" class="text-[10px] text-rose-400 hover:text-rose-300">Hapus Log</button>
+                        </div>
+                        <div id="bcLogList" class="bg-slate-950/60 border border-slate-800 rounded-xl max-h-40 overflow-y-auto custom-scrollbar divide-y divide-slate-800/50"></div>
+                    </div>
+                </div>
+
+                <!-- ════ RIGHT (2 cols): Kontak ════ -->
+                <div class="md:col-span-2 p-4 flex flex-col gap-3">
+
+                    <!-- Search + Area filter -->
+                    <div class="flex gap-2">
+                        <input id="bcSearch" oninput="renderBcContacts()" placeholder="🔍 Cari nama / nomor..."
+                            class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500" />
+                        <select id="bcAreaFilter" onchange="renderBcContacts()"
+                            class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500">
+                            <option value="">Semua Area</option>
+                        </select>
+                    </div>
+
+                    <!-- Select controls -->
+                    <div class="flex items-center justify-between text-[11px]">
+                        <div class="flex gap-2">
+                            <button onclick="selectAllBcContacts(true)" class="text-cyan-400 hover:text-cyan-300 font-semibold">Pilih Semua</button>
+                            <span class="text-slate-600">·</span>
+                            <button onclick="selectBcByArea()" class="text-amber-400 hover:text-amber-300 font-semibold">Pilih Area</button>
+                            <span class="text-slate-600">·</span>
+                            <button onclick="selectAllBcContacts(false)" class="text-slate-400 hover:text-slate-300">Reset</button>
+                        </div>
+                        <span id="bcSelCounter" class="text-slate-500">0 / 0 dipilih</span>
+                    </div>
+
+                    <!-- Contact list -->
+                    <div id="bcContactList" class="flex-1 min-h-0 max-h-56 overflow-y-auto custom-scrollbar bg-slate-950/40 border border-slate-800 rounded-xl divide-y divide-slate-800/50"></div>
+
+                    <!-- Add / Edit contact form -->
+                    <div class="border-t border-slate-700/50 pt-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Tambah / Edit Kontak</span>
+                            <button onclick="openBcImport()" class="text-[10px] text-amber-400 hover:text-amber-300 font-semibold">📋 Import Massal</button>
+                        </div>
+                        <input id="bcContactName" placeholder="Nama Pelanggan"
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500" />
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="bcContactPhone" placeholder="No WA (08xxx...)"
+                                class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500" />
+                            <input id="bcContactArea" placeholder="Area (opsional)"
+                                class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500" />
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="bcSaveContactBtn" onclick="saveBcContact()"
+                                class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition">+ Tambah</button>
+                            <button onclick="cancelEditBcContact()"
+                                class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs">Batal</button>
+                        </div>
+
+                        <!-- Bulk import panel (hidden by default) -->
+                        <div id="bcImportPanel" class="hidden space-y-2 border border-amber-700/50 rounded-xl p-3 bg-amber-950/20">
+                            <div class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Import Massal</div>
+                            <div class="text-[10px] text-slate-400">Format per baris: <code class="text-amber-300">Nama|Nomor|Area</code> &nbsp;(Area opsional)</div>
+                            <textarea id="bcImportText" rows="5" placeholder="Budi Santoso|081234567890|Area Blitar&#10;Siti Rahayu|082345678901|Area Kediri&#10;081112223334"
+                                class="w-full bg-slate-950 border border-amber-700/40 rounded-lg p-2 text-xs text-white focus:outline-none resize-none custom-scrollbar font-mono"></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="runBcImport()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs">Import</button>
+                                <button onclick="document.getElementById('bcImportPanel').classList.add('hidden')" class="bg-slate-700 px-3 py-1.5 rounded-lg text-xs">Batal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
