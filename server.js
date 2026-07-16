@@ -160,7 +160,9 @@ const server = http.createServer(async (req, res) => {
                 // If Groq fails or rate limits, use fallback response safely
                 if (!groqResponse.ok || responseData.error) {
                     console.log('Using enhanced fallback response due to Groq API error');
-                    const userMessage = payload.messages[1]?.content || '';
+                    const rawMsg = payload.messages[1]?.content || '';
+                    // Strip the "Analisis chat pelanggan ini: " prefix injected by the frontend
+                    const userMessage = rawMsg.replace(/^Analisis chat pelanggan ini:\s*"?/i, '').replace(/"$/, '');
                     
                     const analysis = analyzeComplaint(userMessage);
                     

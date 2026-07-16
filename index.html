@@ -859,7 +859,10 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                 if (!response.ok) throw new Error("Gagal mengambil data dari gateway server.");
 
                 const data = await response.json();
-                const resAi = JSON.parse(data.choices[0].message.content);
+                const rawContent = data.choices[0].message.content;
+                const resAi = (typeof rawContent === 'object' && rawContent !== null)
+                    ? rawContent
+                    : JSON.parse(rawContent);
 
                 document.getElementById('aiCategory').innerText = resAi.kategori;
                 document.getElementById('aiRootCause').innerText = resAi.akar_masalah;
@@ -877,7 +880,7 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
 
             } catch (error) {
                 console.error(error);
-                alert("Gagal memproses AI. Pastikan file 'analyze_groq.php' berada di folder yang sama atau server web Anda aktif.");
+                alert("Gagal memproses AI. Pastikan server berjalan dan endpoint 'analyze_groq.php' (lokal) atau '/api/analyze_groq' (Vercel) dapat diakses.");
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Analisis Keluhan Pelanggan`;
@@ -1818,7 +1821,7 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                         </div>
                         <div class="text-slate-400 truncate mt-0.5" title="${escapeHtml(safeMsg)}">${escapeHtml(safeMsg.slice(0, 60))}${safeMsg.length > 60 ? '…' : ''}</div>
                     </div>
-                    <button onclick="resendFromLog('${escapeHtml(l.phone)}', ${JSON.stringify(safeMsg)})" title="Kirim ulang" class="shrink-0 text-cyan-400 hover:text-cyan-300 mt-0.5">↩</button>`;
+                    <button data-phone="${escapeHtml(l.phone)}" data-msg="${escapeHtml(safeMsg)}" onclick="resendFromLog(this.dataset.phone, this.dataset.msg)" title="Kirim ulang" class="shrink-0 text-cyan-400 hover:text-cyan-300 mt-0.5">↩</button>`;
                 box.appendChild(div);
             });
         }

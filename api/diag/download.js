@@ -4,7 +4,7 @@ export default function handler(req, res) {
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Length', size);
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200);
+    res.writeHead(200);
 
     const chunk = Buffer.alloc(Math.min(65536, size), 0);
     let remaining = size;
