@@ -42,8 +42,17 @@ export default async function handler(req, res) {
     }
 
     const apiKey = process.env.GROQ_API_KEY;
+
+    // Helper: extract clean user message from the prefixed content
+    function extractUserMessage(messages) {
+        const raw = messages?.[1]?.content || messages?.[0]?.content || '';
+        return raw.replace(/^Analisis chat pelanggan ini:\s*"?/i, '').replace(/"$/, '').trim();
+    }
+
+    // No API key — use local fallback immediately, do NOT return a 500 error
     if (!apiKey) {
-        res.status(500).json({ error: 'GROQ_API_KEY environment variable is not set.' });
+        const analysis = analyzeComplaint(extractUserMessage(payload?.messages));
+        res.status(200).json({ choices: [{ message: { content: JSON.stringify(analysis) } }] });
         return;
     }
 
@@ -57,10 +66,8 @@ export default async function handler(req, res) {
         const data = await groqRes.json();
 
         if (!groqRes.ok || data.error) {
-            const rawMsg = payload?.messages?.[1]?.content || '';
-            // Strip the "Analisis chat pelanggan ini: " prefix injected by the frontend
-            const userMessage = rawMsg.replace(/^Analisis chat pelanggan ini:\s*"?/i, '').replace(/"$/, '');
-            const analysis = analyzeComplaint(userMessage);
+            // Groq error (rate limit, invalid key, etc.) — fall back to local analyzer
+            const analysis = analyzeComplaint(extractUserMessage(payload?.messages));
             res.status(200).json({ choices: [{ message: { content: JSON.stringify(analysis) } }] });
             return;
         }
@@ -68,9 +75,7 @@ export default async function handler(req, res) {
         res.status(groqRes.status).json(data);
     } catch (err) {
         // Network error — use local fallback
-        const rawMsg = payload?.messages?.[1]?.content || '';
-        const userMessage = rawMsg.replace(/^Analisis chat pelanggan ini:\s*"?/i, '').replace(/"$/, '');
-        const analysis = analyzeComplaint(userMessage);
+        const analysis = analyzeComplaint(extractUserMessage(payload?.messages));
         res.status(200).json({ choices: [{ message: { content: JSON.stringify(analysis) } }] });
     }
 }

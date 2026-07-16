@@ -801,14 +801,69 @@
         }
 
         // ==========================================================
-        //         SECURE AJAX NODE REQUEST (DIRECT LOCAL PHP)
+        //   CLIENT-SIDE FALLBACK ANALYZER (runs without any server)
+        // ==========================================================
+        function analyzeComplaintClient(userMessage) {
+            const msg = userMessage.toLowerCase();
+            const patterns = [
+                { keywords: ['ganti password', 'password', 'lupa password', 'reset password', 'ubah password', 'password baru'], actionKey: 'gantiPass', kategori: 'Ganti Password WiFi', akar_masalah: 'Pelanggan ingin mengubah atau reset password WiFi router mereka', rekomendasi: '1. Login ke admin panel router (192.168.1.1 atau 192.168.0.1)\n2. Cek default user/pass di stiker modem\n3. Masuk Settings WiFi > Security > ubah password\n4. Simpan dan test koneksi dengan password baru' },
+                { keywords: ['putus', 'disconnect', 'tidak konek', 'terputus', 'offline', 'down', 'hilang', 'tidak tersambung', 'mati'], actionKey: 'losKabel', kategori: 'Koneksi Putus/Offline', akar_masalah: 'Sambungan internet terputus atau perangkat offline dari jaringan ISP', rekomendasi: '1. Restart modem/ONT tunggu 2-3 menit\n2. Cek status kabel fisik\n3. Periksa indikator LED modem\n4. Jika masih putus, verifikasi di CMS dan escalate ke teknis' },
+                { keywords: ['lemot', 'lambat', 'slow', 'lag', 'delay', 'jelek', 'buruk', 'pelan', 'kurang stabil', 'tidak stabil'], actionKey: 'trafficFull', kategori: 'Kecepatan Internet Rendah', akar_masalah: 'Kecepatan koneksi menurun atau terjadi bottleneck bandwidth', rekomendasi: '1. Minta pelanggan test speed di speedtest.net\n2. Periksa CCQ % dan dBm di terminal modem\n3. Cek traffic/trafik penuh atau gangguan RF\n4. Jika masih buruk, lakukan optimize jalur atau ganti perangkat' },
+                { keywords: ['gangguan', 'bts', 'pemancar', 'area', 'masif', 'perbaikan', 'pemeliharaan', 'maintenance'], actionKey: 'massBts', kategori: 'Gangguan Area/Pemancar', akar_masalah: 'Gangguan area luas atau maintenance jaringan pemancar induk', rekomendasi: '1. Konfirmasi apakah ada gangguan di area via system\n2. Beritahu ETA perbaikan\n3. Log complaint di CRM dengan status gangguan area\n4. Follow up setelah gangguan teratasi' },
+                { keywords: ['kabel', 'loss', 'splice', 'fiber', 'odp', 'odc', 'kabel putus'], actionKey: 'losKabel', kategori: 'Indikasi Kabel Putus', akar_masalah: 'Kemungkinan ada kabel putus atau splice rusak di jalur', rekomendasi: '1. Cek status COE dan signal loss di modem\n2. Periksa riwayat gangguan area di line tersebut\n3. Koordinasi dengan teknis field untuk survey\n4. Jika terbukti putus, buat WO maintenance kabel' },
+                { keywords: ['hang', 'stuck', 'beku', 'freeze', 'tidak merespon', 'restart', 'reboot'], actionKey: 'stuck', kategori: 'Perangkat Hang/Stuck', akar_masalah: 'Perangkat (modem/router) tidak merespon atau hang karena overload/bug', rekomendasi: '1. Instruksikan restart perangkat (tahan power 30 detik)\n2. Tunggu booting 2-3 menit\n3. Test koneksi setelah normal\n4. Jika sering hang, ganti perangkat dengan unit baru' },
+                { keywords: ['wifi', 'wireless', 'sinyal', 'putus-putus', 'interference', 'interferensi', 'frekuensi'], actionKey: 'interferensi', kategori: 'Interferensi/Sinyal WiFi Buruk', akar_masalah: 'Sinyal WiFi tersebar tidak merata atau interferensi RF lokal', rekomendasi: '1. Cek posisi router, jauhkan dari obstacles\n2. Scan channel WiFi dan gunakan channel yang sepi\n3. Ubah frekuensi ke 5GHz jika tersedia\n4. Pertimbangkan penambahan AP/extender jika area luas' },
+                { keywords: ['bayar', 'tagihan', 'pembayaran', 'tunggakan', 'suspend', 'isolir', 'blokir', 'tersuspend'], actionKey: 'financeIsolir', kategori: 'Masalah Administrasi/Pembayaran', akar_masalah: 'Status pelanggan suspend/isolir akibat pembayaran tertunggak', rekomendasi: '1. Cek status pembayaran di billing system\n2. Jika ada tunggakan, minta pembayaran\n3. Proses re-aktif setelah pembayaran terverifikasi\n4. Koordinasi dengan divisi finance jika ada dispute' },
+                { keywords: ['listrik', 'pln', 'mati lampu', 'pemadaman', 'padam'], actionKey: 'massPln', kategori: 'Pemadaman Listrik PLN', akar_masalah: 'Internet mati karena pemadaman listrik dari PLN di area pelanggan', rekomendasi: '1. Konfirmasi apakah ada pemadaman PLN di area tersebut\n2. Informasikan ke pelanggan bahwa ini di luar kendali ISP\n3. Minta tunggu hingga listrik normal\n4. Follow up setelah listrik kembali' },
+                { keywords: ['antena', 'outdoor', 'antena tidak konek', 'tidak terkoneksi', 'signal loss'], actionKey: 'antenaDown', kategori: 'Antena Wireless Tidak Konek', akar_masalah: 'Antena outdoor tidak terhubung dengan pemancar ISP', rekomendasi: '1. Cek status antena di monitoring\n2. Verifikasi level sinyal dBm\n3. Jadwalkan kunjungan teknisi ke lokasi\n4. Periksa fisik kabel dan antena saat kunjungan' },
+                { keywords: ['router', 'modem tidak konek', 'router tidak konek', 'modem offline'], actionKey: 'routerDown', kategori: 'Router/Modem Tidak Konek', akar_masalah: 'Router atau modem pelanggan tidak terkoneksi ke jaringan ISP', rekomendasi: '1. Minta lepas adaptor 2 menit lalu pasang kembali\n2. Cek indikator LED router\n3. Verifikasi kabel LAN dari ONT ke router\n4. Jika masih offline, jadwalkan kunjungan teknisi' },
+                { keywords: ['id', 'atas nama', 'nama pelanggan', 'nomor pelanggan', 'identitas', 'verifikasi', 'data diri', 'nomer'], actionKey: 'tanyaId', kategori: 'Verifikasi Data Pelanggan', akar_masalah: 'Perlu verifikasi identitas pelanggan untuk keamanan dan proses', rekomendasi: '1. Minta konfirmasi ID/No. Pelanggan\n2. Validasi nama sesuai database\n3. Jika tidak sesuai, escalate ke supervisor\n4. Lanjutkan proses setelah verifikasi OK' }
+            ];
+            let best = { score: 0, actionKey: 'trafficFull', kategori: 'Masalah Koneksi Internet', akar_masalah: 'Koneksi internet mengalami gangguan atau penurunan kualitas layanan', rekomendasi: '1. Restart perangkat modem\n2. Periksa kabel koneksi\n3. Tunggu 2-3 menit untuk stabilisasi\n4. Jika masih bermasalah, hubungi teknis' };
+            patterns.forEach(p => {
+                let score = 0;
+                p.keywords.forEach(k => { if (msg.includes(k)) score += 2; });
+                if (score > best.score) best = { score, actionKey: p.actionKey, kategori: p.kategori, akar_masalah: p.akar_masalah, rekomendasi: p.rekomendasi };
+            });
+            return { kategori: best.kategori, akar_masalah: best.akar_masalah, rekomendasi: best.rekomendasi, action_key: best.actionKey };
+        }
+
+        // Render hasil analisis ke UI
+        function renderAiResult(resAi, source) {
+            const outBox = document.getElementById('aiOutputBox');
+            document.getElementById('aiCategory').innerText = resAi.kategori || '-';
+            document.getElementById('aiRootCause').innerText = resAi.akar_masalah || '-';
+            document.getElementById('aiAction').innerText = resAi.rekomendasi || '-';
+
+            const tag = document.getElementById('aiTriggerTag');
+            if (tag) {
+                tag.textContent = source === 'groq' ? 'GROQ AI' : 'LOCAL AI';
+                tag.className = source === 'groq'
+                    ? 'bg-purple-950 text-purple-300 border border-purple-800 text-[9px] px-1.5 py-0.5 rounded font-bold'
+                    : 'bg-amber-950 text-amber-300 border border-amber-700 text-[9px] px-1.5 py-0.5 rounded font-bold';
+            }
+
+            const actionKey = resAi.action_key || '';
+            document.getElementById('aiTemplateSuggestion').innerHTML = actionKey ? `
+                <div class="flex items-center justify-between gap-2 mt-1 pt-2 border-t border-slate-800">
+                    <span>💡 Rekomendasi SOP: <strong>${actionKey}</strong></span>
+                    <button onclick="setTemplate('${actionKey}')" class="bg-cyan-500 text-slate-950 font-bold px-3 py-1 rounded text-[11px] hover:bg-cyan-400 transition cursor-pointer shadow">
+                        <i class="fa-solid fa-bolt"></i> Terapkan Template
+                    </button>
+                </div>` : '';
+
+            outBox.classList.remove('hidden');
+        }
+
+        // ==========================================================
+        //   GROQ AI ANALYZER — server proxy + client-side fallback
         // ==========================================================
         async function processChatWithGroqAI() {
-            const userInput = document.getElementById('aiInput').value;
+            const userInput = document.getElementById('aiInput').value.trim();
             const btn = document.getElementById('btnAnalyze');
             const outBox = document.getElementById('aiOutputBox');
 
-            if (!userInput.trim()) {
+            if (!userInput) {
                 alert("Silakan paste chat dari pelanggan terlebih dahulu!");
                 return;
             }
@@ -840,47 +895,45 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
   "action_key": "salah satu kunci di atas"
 }`;
 
+            const requestBody = JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `Analisis chat pelanggan ini: "${userInput}"` }
+                ],
+                temperature: 0.1,
+                response_format: { type: "json_object" }
+            });
+
             try {
-                // Request dilempar ke file PHP lokal di server, bebas dari aturan CORS browser
-                const response = await fetch("analyze_groq.php", {
+                // Coba endpoint Vercel /api/analyze_groq atau lokal analyze_groq.php
+                const endpoint = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? '/analyze_groq.php'
+                    : '/api/analyze_groq';
+
+                const response = await fetch(endpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
-                        messages: [
-                            { role: "system", content: systemPrompt },
-                            { role: "user", content: `Analisis chat pelanggan ini: "${userInput}"` }
-                        ],
-                        temperature: 0.1,
-                        response_format: { type: "json_object" }
-                    })
+                    body: requestBody
                 });
 
-                if (!response.ok) throw new Error("Gagal mengambil data dari gateway server.");
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
                 const data = await response.json();
+                if (!data.choices?.[0]?.message?.content) throw new Error('Respons tidak valid dari server');
+
                 const rawContent = data.choices[0].message.content;
                 const resAi = (typeof rawContent === 'object' && rawContent !== null)
                     ? rawContent
                     : JSON.parse(rawContent);
 
-                document.getElementById('aiCategory').innerText = resAi.kategori;
-                document.getElementById('aiRootCause').innerText = resAi.akar_masalah;
-                document.getElementById('aiAction').innerText = resAi.rekomendasi;
-
-                document.getElementById('aiTemplateSuggestion').innerHTML = `
-                    <div class="flex items-center justify-between gap-2 mt-1 pt-2 border-t border-slate-800">
-                        <span>💡 Rekomendasi SOP: <strong>${resAi.action_key}</strong></span>
-                        <button onclick="setTemplate('${resAi.action_key}')" class="bg-cyan-500 text-slate-950 font-bold px-3 py-1 rounded text-[11px] hover:bg-cyan-400 transition cursor-pointer shadow">
-                            <i class="fa-solid fa-bolt"></i> Terapkan Template
-                        </button>
-                    </div>`;
-
-                outBox.classList.remove('hidden');
+                renderAiResult(resAi, 'groq');
 
             } catch (error) {
-                console.error(error);
-                alert("Gagal memproses AI. Pastikan server berjalan dan endpoint 'analyze_groq.php' (lokal) atau '/api/analyze_groq' (Vercel) dapat diakses.");
+                console.warn('Server AI gagal, menggunakan analisis lokal:', error.message);
+                // Fallback: jalankan analisis langsung di browser tanpa perlu server
+                const resAi = analyzeComplaintClient(userInput);
+                renderAiResult(resAi, 'local');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Analisis Keluhan Pelanggan`;
