@@ -2585,9 +2585,14 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
         setVal('gSn',         parsedSn);
         setVal('gIdPel',      parsedId);
         setVal('gNamaPel',    parsedNama);
-        // PPPoE user = ID pelanggan jika belum diisi
+        // PPPoE user selalu = ID pelanggan saat Quick Fill
         const pppoeUserEl = document.getElementById('gPppoeUser');
-        if (pppoeUserEl && !pppoeUserEl.value) pppoeUserEl.value = parsedId;
+        if (pppoeUserEl && parsedId) {
+            pppoeUserEl.value = parsedId;
+            // Sync prevId agar gponSyncUser tidak override setelah Quick Fill
+            const idEl = document.getElementById('gIdPel');
+            if (idEl) idEl.dataset.prevId = parsedId;
+        }
 
         // Re-generate script
         gponRender();
