@@ -259,13 +259,21 @@ const server = http.createServer(async (req, res) => {
                 const os = require('os');
                 const uniqueId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
                 const vbsPath = path.join(os.tmpdir(), `ssh_auto_${uniqueId}.vbs`);
-                
+
+                // Escape special VBScript/SendKeys characters in the password:
+                // SendKeys treats +^%~{}[]() as special — wrap each in braces to send literally
+                const escapedPass = pass.replace(/([+^%~{}()[\]])/g, '{$1}');
+                // Escape double-quotes in ip/user for the Run string (strip any that sneak in)
+                const safeIp   = ip.replace(/['"]/g, '');
+                const safeUser = user.replace(/['"]/g, '');
+
                 // VBScript to open CMD, run SSH, wait, and send password
-                const vbsScript = `
-Set WshShell = WScript.CreateObject("WScript.Shell")
-WshShell.Run "cmd /k ssh ${user}@${ip}", 1, False
-WScript.Sleep 2500
-WshShell.SendKeys "${pass}"
+                const vbsScript = `Set WshShell = WScript.CreateObject("WScript.Shell")
+WshShell.Run "cmd /k ssh ${safeUser}@${safeIp}", 1, False
+WScript.Sleep 3000
+WshShell.AppActivate "cmd"
+WScript.Sleep 500
+WshShell.SendKeys "${escapedPass}"
 WshShell.SendKeys "{ENTER}"
 `;
                 fs.writeFileSync(vbsPath, vbsScript);
