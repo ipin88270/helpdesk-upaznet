@@ -2645,8 +2645,9 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
         hub.innerHTML = commands.map(c => `
             <div class="space-y-1">
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${c.label}</div>
-                <div class="relative group">
-                    <pre class="bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-2 text-[11px] text-cyan-200 font-mono whitespace-pre leading-relaxed cursor-pointer hover:border-cyan-600/60 transition" onclick="gponCopyText(this.textContent, this)">${c.cmd}</pre>
+                <div class="relative">
+                    <pre data-cmd="${c.cmd.replace(/"/g,'&quot;')}" class="gpon-cmd-pre bg-slate-800/80 rounded-lg px-3 py-2 text-[11px] text-cyan-200 font-mono whitespace-pre leading-relaxed cursor-pointer transition-all select-all" style="border:1px solid #334155" onclick="gponCopyCmd(this)">${c.cmd}</pre>
+                    <span class="gpon-copied-badge absolute top-1 right-2 text-[9px] font-black text-emerald-400 opacity-0 pointer-events-none transition-opacity duration-200">✅ COPIED!</span>
                     ${c.note ? `<div class="text-[9px] text-slate-500 mt-0.5 italic">${c.note}</div>` : ''}
                 </div>
             </div>`).join('');
@@ -2657,16 +2658,32 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
         if (!el) return;
         navigator.clipboard.writeText(el.textContent).then(() => {
             const btn = el.closest('.bg-slate-950').querySelector('button');
-            if (btn) { const orig = btn.textContent; btn.textContent = '✅ COPIED'; setTimeout(() => btn.textContent = orig, 1600); }
+            if (btn) { const orig = btn.innerHTML; btn.innerHTML = '✅ COPIED'; setTimeout(() => btn.innerHTML = orig, 1600); }
         });
     }
 
-    function gponCopyText(text, el) {
+    function gponCopyCmd(preEl) {
+        const text = preEl.dataset.cmd || preEl.textContent;
         navigator.clipboard.writeText(text.trim()).then(() => {
-            const orig = el.style.borderColor;
-            el.style.borderColor = '#22d3ee';
-            el.style.color = '#67e8f9';
-            setTimeout(() => { el.style.borderColor = ''; el.style.color = ''; }, 1400);
+            // Flash border cyan
+            preEl.style.borderColor = '#22d3ee';
+            preEl.style.color = '#a5f3fc';
+            // Show badge
+            const badge = preEl.nextElementSibling;
+            if (badge && badge.classList.contains('gpon-copied-badge')) {
+                badge.style.opacity = '1';
+                setTimeout(() => { badge.style.opacity = '0'; }, 1400);
+            }
+            setTimeout(() => {
+                preEl.style.borderColor = '#334155';
+                preEl.style.color = '';
+            }, 1400);
+        }).catch(() => {
+            // Fallback: select text so user can Ctrl+C
+            const range = document.createRange();
+            range.selectNodeContents(preEl);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
         });
     }
 
