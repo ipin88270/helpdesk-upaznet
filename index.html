@@ -2393,7 +2393,7 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-[10px] text-slate-400 block mb-1">ID Pelanggan</label>
-                            <input id="gIdPel" value="1010112678" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="1010112678">
+                            <input id="gIdPel" value="1010112678" oninput="gponSyncUser(this.value); gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="1010112678">
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-400 block mb-1">Nama Pelanggan</label>
@@ -2648,6 +2648,20 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
 
         gponRender();
         gponRenderHub();
+    }
+
+    // Sync PPPoE User dengan ID Pelanggan secara otomatis,
+    // kecuali user sudah mengisi PPPoE User secara manual (berbeda dari ID lama)
+    function gponSyncUser(newId) {
+        const userEl = document.getElementById('gPppoeUser');
+        const idEl   = document.getElementById('gIdPel');
+        if (!userEl || !idEl) return;
+        // Sync jika PPPoE User kosong ATAU masih sama dengan nilai ID sebelumnya
+        const prevId = idEl.dataset.prevId ?? '';
+        if (!userEl.value || userEl.value === prevId) {
+            userEl.value = newId;
+        }
+        idEl.dataset.prevId = newId;
     }
 
     function gponVals() {
