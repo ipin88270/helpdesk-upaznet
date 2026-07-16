@@ -249,6 +249,9 @@
             <button id="oltBtn" title="Remote OLT EPON"
                 class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
                 onclick="openOltModal()"><i class="fa-solid fa-network-wired"></i> OLT</button>
+            <button id="gponBtn" title="GPON Script Generator"
+                class="ml-1 bg-cyan-700/80 hover:bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-semibold"
+                onclick="openGpon()"><i class="fa-solid fa-terminal"></i> GPON</button>
             <button id="rekeningBtn" title="No. Rekening Pembayaran"
                 class="ml-1 bg-emerald-800/70 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-semibold"
                 onclick="openRekening()"><i class="fa-solid fa-building-columns"></i> Rekening</button>
@@ -2303,6 +2306,375 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                 closeRekening();
             }
         }
+    </script>
+
+    <!-- ===== GPON SCRIPT GENERATOR MODAL ===== -->
+    <div id="gponModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-2 overflow-y-auto">
+        <div class="absolute inset-0 bg-black/60" onclick="closeGpon()"></div>
+        <div class="relative w-full max-w-7xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-10 my-3 overflow-hidden flex flex-col" style="max-height:96vh">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-cyan-900/30 border-b border-slate-700/70 shrink-0">
+                <h3 class="font-black text-sm flex items-center gap-2 text-white">
+                    <i class="fa-solid fa-terminal text-cyan-400"></i> GPON Script Generator — Upaznet
+                </h3>
+                <button onclick="closeGpon()" class="text-slate-400 hover:text-white text-lg px-2 leading-none">✕</button>
+            </div>
+
+            <!-- Entitas tabs -->
+            <div class="flex gap-1 px-4 pt-3 pb-0 shrink-0 border-b border-slate-700/50 flex-wrap">
+                <button onclick="gponSetEntitas('UNR_C600')" id="gTab-UNR_C600" class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-cyan-700 text-white">UNR C600</button>
+                <button onclick="gponSetEntitas('UNR_C300')" id="gTab-UNR_C300" class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UNR C300</button>
+                <button onclick="gponSetEntitas('UNB')"      id="gTab-UNB"      class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UNB</button>
+                <button onclick="gponSetEntitas('UHO')"      id="gTab-UHO"      class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UHO</button>
+                <button onclick="gponSetEntitas('UGR')"      id="gTab-UGR"      class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UGR</button>
+                <button onclick="gponSetEntitas('UBL')"      id="gTab-UBL"      class="gpon-etab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UBL</button>
+            </div>
+
+            <!-- Body: 3 columns -->
+            <div class="flex flex-col lg:flex-row gap-0 divide-y lg:divide-y-0 lg:divide-x divide-slate-700/50 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
+
+                <!-- LEFT: Form Input -->
+                <div class="lg:w-72 shrink-0 p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                    <div class="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-2">Parameter Konfigurasi</div>
+
+                    <!-- Tipe Config -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">Tipe Konfigurasi</label>
+                        <select id="gTipeConfig" onchange="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500">
+                            <option value="pppoe">Standard (PPPoE)</option>
+                            <option value="bridge">Bridge</option>
+                        </select>
+                    </div>
+
+                    <!-- Interface OLT -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">Interface OLT</label>
+                            <input id="gInterface" value="1/4/2" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="1/4/2">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">ONU ID</label>
+                            <input id="gOnuId" value="88" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="88">
+                        </div>
+                    </div>
+
+                    <!-- SN -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">Serial Number (SN)</label>
+                        <input id="gSn" value="ZTEGD2327302" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono uppercase" placeholder="ZTEGD2327302">
+                    </div>
+
+                    <div class="border-t border-slate-700/40 pt-2">
+                        <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2">PPPoE Secret & Pelanggan</div>
+                    </div>
+
+                    <!-- ID & Nama -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">ID Pelanggan</label>
+                            <input id="gIdPel" value="1010112678" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="1010112678">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">Nama Pelanggan</label>
+                            <input id="gNamaPel" value="BUDI SANTOSO" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500" placeholder="BUDI SANTOSO">
+                        </div>
+                    </div>
+
+                    <!-- Paket, PPPoE user, pass -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">Paket Layanan</label>
+                        <select id="gPaket" onchange="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500">
+                            <option value="kusuma">KUSUMA 1</option>
+                            <option value="mangga2">MANGGA 2</option>
+                            <option value="mangga5">MANGGA 5</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">PPPoE User</label>
+                            <input id="gPppoeUser" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="(= ID Pelanggan)">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">PPPoE Pass</label>
+                            <input id="gPppoePass" value="150326" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="150326">
+                        </div>
+                    </div>
+
+                    <!-- VLAN override -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">VLAN ID <span class="text-slate-600">(auto dari entitas)</span></label>
+                        <input id="gVlan" oninput="gponRender()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-500 font-mono" placeholder="auto">
+                    </div>
+
+                    <button onclick="gponRender()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition mt-1">
+                        <i class="fa-solid fa-code"></i> Generate Script
+                    </button>
+                </div>
+
+                <!-- MIDDLE: Generated Scripts -->
+                <div class="flex-1 p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                    <div class="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-2">Output Script</div>
+
+                    <!-- Script OLT ZTE -->
+                    <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-3 py-2 bg-slate-800/60 border-b border-slate-700/60">
+                            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-circle text-cyan-500 text-[7px]"></i> SCRIPT OLT (ZTE)</span>
+                            <button onclick="gponCopy('gScriptOlt')" class="text-[10px] bg-cyan-700/60 hover:bg-cyan-600 text-white px-2 py-0.5 rounded font-bold transition">COPY</button>
+                        </div>
+                        <pre id="gScriptOlt" class="p-3 text-[11px] text-emerald-300 font-mono whitespace-pre overflow-x-auto custom-scrollbar leading-relaxed" style="max-height:280px"></pre>
+                    </div>
+
+                    <!-- Script Mikrotik -->
+                    <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-3 py-2 bg-slate-800/60 border-b border-slate-700/60">
+                            <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-circle text-amber-500 text-[7px]"></i> SCRIPT MIKROTIK (PPPoE SECRET)</span>
+                            <button onclick="gponCopy('gScriptMikrotik')" class="text-[10px] bg-amber-700/60 hover:bg-amber-600 text-white px-2 py-0.5 rounded font-bold transition">COPY</button>
+                        </div>
+                        <pre id="gScriptMikrotik" class="p-3 text-[11px] text-amber-200 font-mono whitespace-pre overflow-x-auto custom-scrollbar leading-relaxed" style="max-height:180px"></pre>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Command Hub -->
+                <div class="lg:w-72 shrink-0 p-4 overflow-y-auto custom-scrollbar">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-terminal text-[9px]"></i> COMMAND HUB
+                        </div>
+                        <div class="flex gap-1">
+                            <span id="gHubBadge" class="text-[9px] font-black px-1.5 py-0.5 rounded bg-cyan-700 text-white">C600</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">C300/C320</span>
+                        </div>
+                    </div>
+                    <div id="gCommandHub" class="space-y-3 text-[11px]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ================================================================
+    //   GPON SCRIPT GENERATOR
+    // ================================================================
+
+    // VLAN default per entitas
+    const GPON_VLAN = {
+        UNR_C600: 134, UNR_C300: 134,
+        UNB: 100, UHO: 110, UGR: 1000, UBL: 1002
+    };
+
+    // vlan-profile name per entitas
+    const GPON_VPROFILE = {
+        UNR_C600: 'v134', UNR_C300: 'v134',
+        UNB: 'v100', UHO: 'v110', UGR: 'v1000', UBL: 'v1002'
+    };
+
+    let _gponEntitas = 'UNR_C600';
+
+    function openGpon() {
+        document.getElementById('gponModal').classList.remove('hidden');
+        gponSetEntitas('UNR_C600');
+    }
+    function closeGpon() {
+        document.getElementById('gponModal').classList.add('hidden');
+    }
+
+    function gponSetEntitas(e) {
+        _gponEntitas = e;
+        document.querySelectorAll('.gpon-etab').forEach(b => {
+            b.classList.replace('bg-cyan-700','bg-slate-800');
+            b.classList.replace('text-white','text-slate-400');
+        });
+        const tb = document.getElementById('gTab-' + e);
+        if (tb) { tb.classList.replace('bg-slate-800','bg-cyan-700'); tb.classList.replace('text-slate-400','text-white'); }
+
+        // Set VLAN input placeholder
+        const vlan = GPON_VLAN[e] || '';
+        const vlanInput = document.getElementById('gVlan');
+        vlanInput.placeholder = vlan;
+        if (!vlanInput.value) vlanInput.value = '';
+
+        // Badge
+        const badge = document.getElementById('gHubBadge');
+        if (badge) badge.textContent = (e === 'UNR_C600') ? 'C600' : 'C300';
+
+        gponRender();
+        gponRenderHub();
+    }
+
+    function gponVals() {
+        const iface   = document.getElementById('gInterface').value.trim()   || '1/4/2';
+        const onuId   = document.getElementById('gOnuId').value.trim()        || '88';
+        const sn      = document.getElementById('gSn').value.trim().toUpperCase() || 'ZTEGD2327302';
+        const idPel   = document.getElementById('gIdPel').value.trim()        || '1010112678';
+        const namaPel = document.getElementById('gNamaPel').value.trim()      || 'BUDI SANTOSO';
+        const paket   = document.getElementById('gPaket').value               || 'kusuma';
+        const user    = document.getElementById('gPppoeUser').value.trim()    || idPel;
+        const pass    = document.getElementById('gPppoePass').value.trim()    || '150326';
+        const vlanRaw = document.getElementById('gVlan').value.trim();
+        const vlan    = vlanRaw ? parseInt(vlanRaw) : (GPON_VLAN[_gponEntitas] || 134);
+        const vprof   = GPON_VPROFILE[_gponEntitas] || ('v' + vlan);
+        const tipe    = document.getElementById('gTipeConfig').value;
+        return { iface, onuId, sn, idPel, namaPel, paket, user: user || idPel, pass, vlan, vprof, tipe };
+    }
+
+    function gponRender() {
+        const v = gponVals();
+        const isC600 = _gponEntitas === 'UNR_C600';
+        const isBridge = v.tipe === 'bridge';
+
+        let oltScript = '';
+        let mikrotikScript = '';
+
+        if (isC600) {
+            // ── ZTE C600 PPPoE ──────────────────────────────────
+            if (!isBridge) {
+                oltScript =
+`conf t
+interface gpon_olt-${v.iface}
+onu ${v.onuId} type ALL sn ${v.sn}
+exit
+interface gpon_onu-${v.iface}:${v.onuId}
+ name ${v.idPel}
+ description ${v.idPel} - ${v.namaPel}
+ tcont 1 profile ${v.paket}
+ gemport 1 tcont 1
+ exit
+interface vport-${v.iface}.${v.onuId}:1
+ service-port 1 user-vlan ${v.vlan} vlan ${v.vlan}
+ exit
+pon-onu-mng gpon_onu-${v.iface}:${v.onuId}
+ service 1 gemport 1 vlan ${v.vlan}
+ security-mgmt 1 state enable mode forward protocol web
+ wan-ip 1 ipv4 mode pppoe username ${v.user} password ${v.pass} vlan-profile ${v.vprof} host 1
+ wan 1 service tr069 internet
+ tr069-mgmt 1 state unlock
+ tr069-mgmt 1 acs http://acs.upaz.net.id:9999/ validate basic user
+ exit
+write`;
+            } else {
+                // C600 Bridge
+                oltScript =
+`conf t
+interface gpon_olt-${v.iface}
+onu ${v.onuId} type ALL sn ${v.sn}
+exit
+interface gpon_onu-${v.iface}:${v.onuId}
+ name ${v.idPel}
+ description ${v.idPel} - ${v.namaPel}
+ tcont 1 profile ${v.paket}
+ gemport 1 tcont 1
+ exit
+interface vport-${v.iface}.${v.onuId}:1
+ service-port 1 user-vlan ${v.vlan} vlan ${v.vlan}
+ exit
+pon-onu-mng gpon_onu-${v.iface}:${v.onuId}
+ service 1 gemport 1 vlan ${v.vlan}
+ security-mgmt 1 state enable mode forward protocol web
+ wan-ip 1 ipv4 mode pppoe username ${v.user} password ${v.pass} vlan-profile ${v.vprof} host 1
+ exit
+write`;
+            }
+        } else {
+            // ── ZTE C300 / C320 PPPoE ───────────────────────────
+            oltScript =
+`configure terminal
+interface gpon-olt_${v.iface}
+ onu ${v.onuId} type ALL sn ${v.sn}
+ exit
+interface gpon-onu_${v.iface}:${v.onuId}
+ name ${v.idPel}
+ description ${v.idPel} - ${v.namaPel}
+ tcont 1 profile ${v.paket}
+ gemport 1 tcont 1
+ exit
+interface vport-${v.iface}.${v.onuId}:1
+ service-port 1 user-vlan ${v.vlan} vlan ${v.vlan}
+ exit
+pon-onu-mng gpon-onu_${v.iface}:${v.onuId}
+ service 1 gemport 1 vlan ${v.vlan}
+ security-mgmt 1 state enable mode forward protocol web
+ wan-ip 1 ipv4 mode pppoe username ${v.user} password ${v.pass} vlan-profile ${v.vprof} host 1
+ wan 1 service tr069 internet
+ tr069-mgmt 1 state unlock
+ tr069-mgmt 1 acs http://acs.upaz.net.id:9999/ validate basic user
+ exit
+write`;
+        }
+
+        // Mikrotik PPPoE Secret
+        mikrotikScript =
+`/ppp secret
+add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="${v.idPel} - ${v.namaPel}"`;
+
+        document.getElementById('gScriptOlt').textContent = oltScript;
+        document.getElementById('gScriptMikrotik').textContent = mikrotikScript;
+    }
+
+    function gponRenderHub() {
+        const hub = document.getElementById('gCommandHub');
+        const isC600 = _gponEntitas === 'UNR_C600';
+
+        // Commands differ slightly between C600 and C300
+        const commands = isC600 ? [
+            { label: 'CEK REDAMAN 1 PORT',       cmd: 'sho pon power onu-rx gpon_olt-1/4/2',               note: 'sesuaikan interface' },
+            { label: 'CEK REDAMAN PELANGGAN',     cmd: 'sho pon power attenuation gpon_onu-1/4/9:10',       note: 'interface & no onu sesuaikan' },
+            { label: 'REBOOT MODEM',              cmd: 'conf t\npon-onu-mng gpon_onu-1/4/2:1\nreboot',      note: '' },
+            { label: 'HAPUS ONU',                 cmd: 'conf t\ninterface gpon_olt-1/4/2\nno onu 1',        note: '' },
+            { label: 'AKTIVASI PORT OLT',         cmd: 'conf t\ninterface gpon_olt-1/4/2\nno shutdown',     note: '' },
+            { label: 'CEK STATUS 1 PORT',         cmd: 'sho gpon onu state gpon_olt-1/4/2',                 note: 'sesuaikan interface' },
+            { label: 'CEK SN BELUM CONFIG',       cmd: 'sho pon onu un',                                    note: '' },
+            { label: 'DETAIL INFO PELANGGAN',     cmd: 'sho gpon onu detail-info gpon_onu-1/4/2:1',         note: 'sesuaikan interface & no onu' },
+            { label: 'CEK DETAIL WAN',            cmd: 'show gpon remote-onu wan-ip gpon_onu-1/4/2:1',      note: 'sesuaikan interface' },
+            { label: 'CEK INTERFACE BERDASAR SN', cmd: 'sho gpon onu by-sn ZTEGD2327302',                   note: 'ganti SN' },
+        ] : [
+            { label: 'CEK REDAMAN 1 PORT',        cmd: 'show pon power onu-rx gpon-olt_1/4/16',             note: 'sesuaikan interface' },
+            { label: 'CEK REDAMAN PELANGGAN',     cmd: 'show pon power attenuation gpon-onu_1/1/3:8',       note: 'interface & no onu sesuaikan' },
+            { label: 'REBOOT MODEM',              cmd: 'configure terminal\npon-onu-mng gpon-onu_1/2/3:13\nreboot', note: '' },
+            { label: 'HAPUS ONU',                 cmd: 'configure terminal\ninterface gpon-olt_1/1/4\nno onu 67', note: '' },
+            { label: 'AKTIVASI PORT OLT',         cmd: 'configure terminal\ninterface gpon-olt_1/4/16\nno shutdown', note: '' },
+            { label: 'CEK STATUS 1 PORT',         cmd: 'show gpon onu state gpon-olt_1/1/8',                note: 'sesuaikan interface' },
+            { label: 'CEK SN BELUM CONFIG',       cmd: 'show gpon onu uncfg',                               note: '' },
+            { label: 'CEK INTERFACE PELANGGAN',   cmd: 'show run interface gpon-onu_1/2/3:13',              note: 'sesuaikan interface & no onu' },
+            { label: 'CEK WAN PELANGGAN',         cmd: 'show onu running config gpon-onu_1/2/3:13',         note: 'sesuaikan interface' },
+            { label: 'DETAIL INFO PELANGGAN',     cmd: 'show gpon onu detail-info gpon-onu_1/1/3:13',       note: 'sesuaikan interface & no onu' },
+            { label: 'CEK INTERFACE BERDASAR SN', cmd: 'show gpon onu by sn CDTC50193615',                  note: 'ganti SN' },
+            { label: 'GANTI MODEM (SN BARU)',     cmd: 'configure terminal\ninterface gpon-onu_1/3/7:21\nregistration-method sn HWTCDF6F0488', note: 'interface lama & SN baru' },
+        ];
+
+        hub.innerHTML = commands.map(c => `
+            <div class="space-y-1">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${c.label}</div>
+                <div class="relative group">
+                    <pre class="bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-2 text-[11px] text-cyan-200 font-mono whitespace-pre leading-relaxed cursor-pointer hover:border-cyan-600/60 transition" onclick="gponCopyText(this.textContent, this)">${c.cmd}</pre>
+                    ${c.note ? `<div class="text-[9px] text-slate-500 mt-0.5 italic">${c.note}</div>` : ''}
+                </div>
+            </div>`).join('');
+    }
+
+    function gponCopy(elId) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent).then(() => {
+            const btn = el.closest('.bg-slate-950').querySelector('button');
+            if (btn) { const orig = btn.textContent; btn.textContent = '✅ COPIED'; setTimeout(() => btn.textContent = orig, 1600); }
+        });
+    }
+
+    function gponCopyText(text, el) {
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            const orig = el.style.borderColor;
+            el.style.borderColor = '#22d3ee';
+            el.style.color = '#67e8f9';
+            setTimeout(() => { el.style.borderColor = ''; el.style.color = ''; }, 1400);
+        });
+    }
+
+    // Init on open
+    document.addEventListener('DOMContentLoaded', () => {
+        gponRender();
+        gponRenderHub();
+    });
     </script>
 
 </body>
