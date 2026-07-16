@@ -1345,12 +1345,46 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ip, user, pass })
                 });
+
+                // If the response is not JSON (e.g. HTML error page), handle gracefully
+                const contentType = res.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    showOltCredentials(ip, user, pass);
+                    return;
+                }
+
                 const result = await res.json();
-                if (!result.ok) throw new Error(result.error || 'Gagal menyambungkan SSH');
-                console.log('SSH connection command sent successfully.');
+                if (!result.ok) {
+                    // SSH not available on this environment — show credentials instead
+                    showOltCredentials(ip, user, pass);
+                } else {
+                    console.log('SSH connection command sent successfully.');
+                }
             } catch (err) {
-                alert('Gagal: ' + err.message);
+                // Network error or parse error — fall back to showing credentials
+                showOltCredentials(ip, user, pass);
             }
+        }
+
+        function showOltCredentials(ip, user, pass) {
+            // Open a small credential card in a new tab so the user can SSH manually
+            const html = `<!doctype html><meta charset="utf-8"><title>OLT ${ip}</title>
+<style>body{font-family:sans-serif;padding:32px;background:#0f172a;color:#e2e8f0;max-width:400px;margin:auto}
+h2{color:#22d3ee;margin-bottom:16px}table{width:100%;border-collapse:collapse}
+td{padding:8px 12px;border:1px solid #334155;font-family:monospace}
+td:first-child{color:#94a3b8;width:80px}
+a{display:block;margin-top:20px;background:#0891b2;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;text-align:center;font-weight:bold}
+</style>
+<h2>🔌 OLT ${ip}</h2>
+<table>
+  <tr><td>Host</td><td>${ip}</td></tr>
+  <tr><td>User</td><td>${user}</td></tr>
+  <tr><td>Pass</td><td>${pass}</td></tr>
+</table>
+<a href="http://${ip}/" target="_blank">🌐 Buka Web Interface</a>
+<p style="color:#64748b;font-size:12px;margin-top:16px">SSH otomatis hanya tersedia saat menjalankan server.js lokal.<br>Gunakan kredensial di atas via terminal atau PuTTY.</p>`;
+            const win = window.open('', '_blank');
+            if (win) { win.document.open(); win.document.write(html); win.document.close(); }
         }
 
         // ====================================================
