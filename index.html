@@ -2336,7 +2336,27 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
 
                 <!-- LEFT: Form Input -->
                 <div class="lg:w-72 shrink-0 p-4 space-y-3 overflow-y-auto custom-scrollbar">
-                    <div class="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-2">Parameter Konfigurasi</div>
+
+                    <!-- ── Quick Fill dari CustPanel ── -->
+                    <div class="bg-cyan-950/40 border border-cyan-700/50 rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-black text-cyan-300 uppercase tracking-widest flex items-center gap-1.5">
+                                <i class="fa-solid fa-paste text-[9px]"></i> Quick Fill — Paste dari CustPanel
+                            </label>
+                            <button onclick="gponQuickClear()" class="text-[9px] text-slate-500 hover:text-slate-300 transition">Bersihkan</button>
+                        </div>
+                        <textarea id="gQuickPaste" rows="4"
+                            placeholder="Paste / tempel teks dari halaman Detail ONU CustPanel...&#10;&#10;Contoh:&#10;ONU interface:&#9;gpon-onu_1/1/1:6&#9;Config state:&#9;fail&#10;Name:&#9;0010100016&#9;Serial number:&#9;CDTC1DEB7D18&#10;Type:&#9;ALL&#9;Description:&#9;0010100016-MUHIBATUL ALIF"
+                            class="w-full bg-slate-950/80 border border-cyan-800/60 rounded-lg p-2 text-[11px] text-slate-300 font-mono focus:outline-none focus:border-cyan-400 resize-none custom-scrollbar"></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="gponQuickFill()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-black py-1.5 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Auto Fill Form
+                            </button>
+                        </div>
+                        <div id="gQuickStatus" class="text-[10px] text-center font-semibold hidden"></div>
+                    </div>
+
+                    <div class="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Parameter Konfigurasi</div>
 
                     <!-- Tipe Config -->
                     <div>
@@ -2470,6 +2490,134 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
     };
 
     let _gponEntitas = 'UNR_C600';
+
+    // ── Quick Fill Parser ─────────────────────────────────────────────
+    // Parses CustPanel "Detail ONU" text (tab-separated label:value pairs)
+    // and auto-fills all GPON form fields
+    function gponQuickFill() {
+        const raw = document.getElementById('gQuickPaste').value.trim();
+        const status = document.getElementById('gQuickStatus');
+
+        if (!raw) {
+            gponShowStatus(status, '⚠️ Textarea kosong — paste dulu teks dari CustPanel', 'amber');
+            return;
+        }
+
+        // Flatten semua token key:value dari teks tab-separated multi-line
+        // Format CustPanel: "Label:\tValue\tLabel:\tValue\n..."
+        const kv = {};
+        // Split per baris, lalu per tab, lalu ambil pasangan label → value
+        raw.split('\n').forEach(line => {
+            const parts = line.split('\t').map(s => s.trim()).filter(Boolean);
+            // Pasangan: parts[0]=label, parts[1]=value, parts[2]=label, parts[3]=value ...
+            for (let i = 0; i < parts.length - 1; i++) {
+                const key = parts[i].replace(/:$/, '').toLowerCase().trim();
+                const val = parts[i + 1];
+                // Hanya ambil jika value-nya bukan key lain (tidak diakhiri ':')
+                if (!val.endsWith(':')) {
+                    kv[key] = val;
+                    i++; // skip value, lanjut ke key berikutnya
+                }
+            }
+        });
+
+        // Juga coba regex langsung untuk robustness
+        const reFields = [
+            [/onu\s*interface\s*[:\t]+([^\t\n]+)/i, 'onu interface'],
+            [/serial\s*number\s*[:\t]+([^\t\n]+)/i,  'serial number'],
+            [/name\s*[:\t]+([^\t\n]+)/i,              'name'],
+            [/description\s*[:\t]+([^\t\n]+)/i,       'description'],
+        ];
+        reFields.forEach(([re, k]) => {
+            const m = raw.match(re);
+            if (m) kv[k] = m[1].trim();
+        });
+
+        // ── Parse ONU Interface → interface + ONU ID ──
+        // Format: gpon-onu_1/1/1:6  atau  gpon_onu-1/1/1:6
+        const onuIfaceRaw = kv['onu interface'] || '';
+        let parsedIface = '', parsedOnuId = '';
+        const mIface = onuIfaceRaw.match(/[\d]+\/[\d]+\/[\d]+:[\d]+/);
+        if (mIface) {
+            const full = mIface[0]; // e.g. "1/1/1:6"
+            const colonIdx = full.lastIndexOf(':');
+            parsedIface  = full.slice(0, colonIdx);   // "1/1/1"
+            parsedOnuId  = full.slice(colonIdx + 1);  // "6"
+        }
+
+        // ── Parse Serial Number ──
+        const parsedSn = (kv['serial number'] || '').toUpperCase();
+
+        // ── Parse Name → ID Pelanggan ──
+        // "Name" field di CustPanel = ID pelanggan
+        const parsedId = (kv['name'] || '').trim();
+
+        // ── Parse Description → Nama Pelanggan ──
+        // Format: "0010100016-MUHIBATUL ALIF" → ambil setelah tanda "-" pertama
+        const descRaw = kv['description'] || '';
+        let parsedNama = descRaw;
+        const dashIdx = descRaw.indexOf('-');
+        if (dashIdx !== -1) {
+            parsedNama = descRaw.slice(dashIdx + 1).trim();
+        }
+
+        // ── Validasi minimal ──
+        const found = [parsedIface, parsedOnuId, parsedSn, parsedId].filter(Boolean).length;
+        if (found === 0) {
+            gponShowStatus(status, '❌ Format tidak dikenali. Pastikan copy dari halaman Detail ONU CustPanel.', 'rose');
+            return;
+        }
+
+        // ── Fill form fields ──
+        const setVal = (id, val) => {
+            if (!val) return;
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = val;
+                // Flash hijau singkat sebagai visual feedback
+                el.style.borderColor = '#22d3ee';
+                setTimeout(() => { el.style.borderColor = ''; }, 800);
+            }
+        };
+
+        setVal('gInterface',  parsedIface);
+        setVal('gOnuId',      parsedOnuId);
+        setVal('gSn',         parsedSn);
+        setVal('gIdPel',      parsedId);
+        setVal('gNamaPel',    parsedNama);
+        // PPPoE user = ID pelanggan jika belum diisi
+        const pppoeUserEl = document.getElementById('gPppoeUser');
+        if (pppoeUserEl && !pppoeUserEl.value) pppoeUserEl.value = parsedId;
+
+        // Re-generate script
+        gponRender();
+
+        // Tampilkan ringkasan hasil parse
+        const parts = [
+            parsedIface  ? `Interface: ${parsedIface}` : null,
+            parsedOnuId  ? `ONU: ${parsedOnuId}`       : null,
+            parsedSn     ? `SN: ${parsedSn}`           : null,
+            parsedId     ? `ID: ${parsedId}`            : null,
+            parsedNama   ? `Nama: ${parsedNama}`        : null,
+        ].filter(Boolean);
+
+        gponShowStatus(status, `✅ ${parts.length} field terisi: ${parts.join(' · ')}`, 'emerald');
+    }
+
+    function gponShowStatus(el, msg, color) {
+        const colors = { emerald: 'text-emerald-400', amber: 'text-amber-400', rose: 'text-rose-400' };
+        el.className = `text-[10px] text-center font-semibold ${colors[color] || colors.emerald}`;
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    function gponQuickClear() {
+        document.getElementById('gQuickPaste').value = '';
+        const st = document.getElementById('gQuickStatus');
+        if (st) st.classList.add('hidden');
+    }
 
     function openGpon() {
         document.getElementById('gponModal').classList.remove('hidden');
