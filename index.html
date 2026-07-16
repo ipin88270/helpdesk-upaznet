@@ -249,6 +249,9 @@
             <button id="oltBtn" title="Remote OLT EPON"
                 class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
                 onclick="openOltModal()"><i class="fa-solid fa-network-wired"></i> OLT</button>
+            <button id="rekeningBtn" title="No. Rekening Pembayaran"
+                class="ml-1 bg-emerald-800/70 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-semibold"
+                onclick="openRekening()"><i class="fa-solid fa-building-columns"></i> Rekening</button>
             <button id="cannedBtn" title="Canned responses (Ctrl+K)"
                 class="ml-1 bg-slate-900/40 hover:bg-slate-800 text-slate-100 px-3 py-1 rounded-lg text-xs"
                 onclick="openCanned()"><i class="fa-solid fa-note-sticky"></i> Canned</button>
@@ -704,7 +707,13 @@
             opsi3: "\n\nSemoga solusi tadi bisa membantu menyelesaikan kendalanya ya kak. Jika nanti masih ada hal lain yang membingungkan atau butuh bantuan lagi, silakan untuk langsung hubungi saya kembali. Kami siap membantu sampai tuntas! 💪😊\n\nTerima kasih atas kesabaran dan kebaikan hati kak {pelanggan}. Salam hangat! 🤝",
             opsi4: "\n\nTerima kasih ya Kak atas pengertian dan kerja samanya. Mohon maaf atas ketidaknyamanannya tadi, ya. 🙇‍♂️\n\nSemoga harinya menyenangkan dan lancar selalu! Have a great day! ✨☀️",
             promo: "\n\nSekedar informasi tambahan ya kak, saat ini untuk layanan pembayaran, pengecekan masa aktif, tanggal jatuh tempo, hingga pengajuan komplain sudah bisa dilakukan secara mandiri melalui aplikasi My Upaz 📱\n\nSilakan mengunduh aplikasinya melalui tautan berikut:\n🔗 https://play.google.com/store/apps/details?id=id.net.upaz.myupaz\n\nJika nanti Kakak memerlukan bantuan atau panduan saat registrasi, silakan hubungi kami kembali ya. Semoga informasinya membantu & selamat beraktivitas kembali Kak! 🙏",
-            alihNomer: "Hallo sahabat upaznet, Mohon maaf untuk layanan komplain kami alihkan ke nomor berikut:\n👉 wa.me/+6285804800803\n\nSilakan mengirimkan pesan dengan format:\nNama: {pelanggan}\nID Pelanggan: "
+            alihNomer: "Hallo sahabat upaznet, Mohon maaf untuk layanan komplain kami alihkan ke nomor berikut:\n👉 wa.me/+6285804800803\n\nSilakan mengirimkan pesan dengan format:\nNama: {pelanggan}\nID Pelanggan: ",
+
+            // ── Template Rekening per Entitas ──
+            rekeningUHO: "Untuk pembayaran bisa melalui rekening berikut:\n\n🏦 BCA a.n. PT DIMENSI JARINGAN BERSINAR\n📌 No. Rekening: 3231143333\n\nMohon konfirmasi pembayaran setelah transfer ya Kak 🙏🏻",
+            rekeningUNR: "Untuk pembayaran bisa melalui rekening berikut:\n\n🏦 BCA a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 0480858875\n\n🏦 BRI a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 659401018183534\n\n🏦 BNI a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 0194166724\n\n🏦 MANDIRI a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 1440013727448\n\nMohon konfirmasi pembayaran setelah transfer ya Kak 🙏🏻",
+            rekeningUNB: "Untuk pembayaran bisa melalui rekening berikut:\n\n🏦 BRI a.n. HANI MUFIDAH\n📌 No. Rekening: 011001012712535\n\n🏦 MANDIRI a.n. SODIK\n📌 No. Rekening: 1440004027980\n\n🏦 BCA a.n. M. SYAMSU DHUHA\n📌 No. Rekening: 0481906465\n\nMohon konfirmasi pembayaran setelah transfer ya Kak 🙏🏻",
+            rekeningUGR: "Untuk pembayaran bisa melalui rekening berikut:\n\n🏦 BCA a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 3230927170\n\n🏦 BRI a.n. ARDIAN MUSTOFA\n📌 No. Rekening: 206501000878566\n\nMohon konfirmasi pembayaran setelah transfer ya Kak 🙏🏻"
         };
 
         function getGreetingTime() {
@@ -2155,6 +2164,146 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
             </div>
         </div>
     </div>
+
+    <!-- ===== REKENING MODAL ===== -->
+    <div id="rekeningModal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-6">
+        <div class="absolute inset-0 bg-black/50" onclick="closeRekening()"></div>
+        <div class="relative w-full max-w-lg bg-slate-900/97 border border-slate-700 rounded-2xl shadow-2xl z-10 overflow-hidden my-4">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-emerald-800/30 border-b border-slate-700/70">
+                <h3 class="font-black text-sm flex items-center gap-2 text-white">
+                    <i class="fa-solid fa-building-columns text-emerald-400"></i> No. Rekening Pembayaran
+                </h3>
+                <button onclick="closeRekening()" class="text-slate-400 hover:text-white text-lg px-2 leading-none">✕</button>
+            </div>
+
+            <!-- Tabs entitas -->
+            <div class="flex gap-1 px-4 pt-3 pb-0 flex-wrap" id="rekeningTabs">
+                <button onclick="switchRekeningTab('UHO')" id="rTab-UHO" class="rek-tab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-emerald-700 text-white">UHO</button>
+                <button onclick="switchRekeningTab('UNR')" id="rTab-UNR" class="rek-tab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UNR</button>
+                <button onclick="switchRekeningTab('UNB')" id="rTab-UNB" class="rek-tab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UNB</button>
+                <button onclick="switchRekeningTab('UGR')" id="rTab-UGR" class="rek-tab px-3 py-1.5 text-xs font-bold rounded-t-lg bg-slate-800 text-slate-400">UGR</button>
+            </div>
+
+            <!-- Content area -->
+            <div class="p-5 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+
+                <!-- UHO -->
+                <div id="rContent-UHO" class="rek-content space-y-2">
+                    <p class="text-[11px] text-slate-400 mb-3">Untuk pembayaran bisa melalui rekening berikut:</p>
+                    <div class="rek-card" data-bank="BCA" data-norek="3231143333" data-an="PT DIMENSI JARINGAN BERSINAR"></div>
+                </div>
+
+                <!-- UNR -->
+                <div id="rContent-UNR" class="rek-content hidden space-y-2">
+                    <p class="text-[11px] text-slate-400 mb-3">Untuk pembayaran bisa melalui rekening berikut:</p>
+                    <div class="rek-card" data-bank="BCA"     data-norek="0480858875"      data-an="ARDIAN MUSTOFA"></div>
+                    <div class="rek-card" data-bank="BRI"     data-norek="659401018183534" data-an="ARDIAN MUSTOFA"></div>
+                    <div class="rek-card" data-bank="BNI"     data-norek="0194166724"      data-an="ARDIAN MUSTOFA"></div>
+                    <div class="rek-card" data-bank="MANDIRI" data-norek="1440013727448"   data-an="ARDIAN MUSTOFA"></div>
+                </div>
+
+                <!-- UNB -->
+                <div id="rContent-UNB" class="rek-content hidden space-y-2">
+                    <p class="text-[11px] text-slate-400 mb-3">Untuk pembayaran bisa melalui rekening berikut:</p>
+                    <div class="rek-card" data-bank="BRI"     data-norek="011001012712535" data-an="HANI MUFIDAH"></div>
+                    <div class="rek-card" data-bank="MANDIRI" data-norek="1440004027980"   data-an="SODIK"></div>
+                    <div class="rek-card" data-bank="BCA"     data-norek="0481906465"      data-an="M. SYAMSU DHUHA"></div>
+                </div>
+
+                <!-- UGR -->
+                <div id="rContent-UGR" class="rek-content hidden space-y-2">
+                    <p class="text-[11px] text-slate-400 mb-3">Untuk pembayaran bisa melalui rekening berikut:</p>
+                    <div class="rek-card" data-bank="BCA" data-norek="3230927170"      data-an="ARDIAN MUSTOFA"></div>
+                    <div class="rek-card" data-bank="BRI" data-norek="206501000878566" data-an="ARDIAN MUSTOFA"></div>
+                </div>
+
+                <!-- Kirim ke preview button -->
+                <div class="pt-3 border-t border-slate-700/50">
+                    <button id="rekeningInsertBtn" onclick="insertRekeningToPreview()"
+                        class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Template Rekening ke Preview Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Bank colour map ───────────────────────────────────────
+        const BANK_COLORS = {
+            BCA:     { bg: '#003f8a', accent: '#0066cc', logo: '🏦' },
+            BRI:     { bg: '#003366', accent: '#005baa', logo: '🏦' },
+            BNI:     { bg: '#f77f00', accent: '#e06000', logo: '🏦' },
+            MANDIRI: { bg: '#003087', accent: '#ffcc00', logo: '🏦' },
+        };
+
+        // Render semua .rek-card dari data-attributes
+        document.querySelectorAll('.rek-card').forEach(card => {
+            const bank  = card.dataset.bank;
+            const norek = card.dataset.norek;
+            const an    = card.dataset.an;
+            const c     = BANK_COLORS[bank] || { bg: '#1e293b', accent: '#475569', logo: '🏦' };
+            card.style.background = c.bg;
+            card.style.borderRadius = '12px';
+            card.style.padding = '14px 16px';
+            card.style.border = `1px solid ${c.accent}44`;
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <div>
+                        <div style="font-weight:800;font-size:13px;color:#ffffff;letter-spacing:0.5px">${c.logo} ${bank}</div>
+                        <div style="font-size:10px;color:#94a3b8;margin-top:2px">a.n. ${an}</div>
+                        <div style="font-family:monospace;font-size:15px;font-weight:700;color:#fbbf24;margin-top:6px;letter-spacing:1px">${norek}</div>
+                    </div>
+                    <button onclick="copyRekening('${norek}','${bank}',this)"
+                        style="background:#ffffff18;border:1px solid #ffffff30;color:#7dd3fc;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                        📋 Copy
+                    </button>
+                </div>`;
+        });
+
+        function copyRekening(norek, bank, btn) {
+            navigator.clipboard.writeText(norek).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ Tersalin!';
+                btn.style.color = '#34d399';
+                setTimeout(() => { btn.innerHTML = orig; btn.style.color = '#7dd3fc'; }, 1800);
+            }).catch(() => alert('Nomor rekening: ' + norek));
+        }
+
+        // ── Tab switcher ─────────────────────────────────────────
+        let _activeRekTab = 'UHO';
+        function switchRekeningTab(entity) {
+            _activeRekTab = entity;
+            document.querySelectorAll('.rek-tab').forEach(b => {
+                b.classList.replace('bg-emerald-700', 'bg-slate-800');
+                b.classList.replace('text-white', 'text-slate-400');
+            });
+            document.querySelectorAll('.rek-content').forEach(c => c.classList.add('hidden'));
+            const tab = document.getElementById('rTab-' + entity);
+            const content = document.getElementById('rContent-' + entity);
+            if (tab) { tab.classList.replace('bg-slate-800', 'bg-emerald-700'); tab.classList.replace('text-slate-400', 'text-white'); }
+            if (content) content.classList.remove('hidden');
+        }
+
+        function openRekening() {
+            document.getElementById('rekeningModal').classList.remove('hidden');
+            switchRekeningTab(_activeRekTab);
+        }
+        function closeRekening() {
+            document.getElementById('rekeningModal').classList.add('hidden');
+        }
+
+        function insertRekeningToPreview() {
+            const keyMap = { UHO: 'rekeningUHO', UNR: 'rekeningUNR', UNB: 'rekeningUNB', UGR: 'rekeningUGR' };
+            const key = keyMap[_activeRekTab];
+            if (key && rawTemplates[key]) {
+                setTemplate(key);
+                closeRekening();
+            }
+        }
+    </script>
 
 </body>
 
