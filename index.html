@@ -2583,16 +2583,13 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
         setVal('gInterface',  parsedIface);
         setVal('gOnuId',      parsedOnuId);
         setVal('gSn',         parsedSn);
-        setVal('gIdPel',      parsedId);
         setVal('gNamaPel',    parsedNama);
-        // PPPoE user selalu = ID pelanggan saat Quick Fill
-        const pppoeUserEl = document.getElementById('gPppoeUser');
-        if (pppoeUserEl && parsedId) {
-            pppoeUserEl.value = parsedId;
-            // Sync prevId agar gponSyncUser tidak override setelah Quick Fill
-            const idEl = document.getElementById('gIdPel');
-            if (idEl) idEl.dataset.prevId = parsedId;
-        }
+
+        // ID Pelanggan + PPPoE User selalu diisi bersamaan, tanpa kondisi apapun
+        const idEl      = document.getElementById('gIdPel');
+        const userEl    = document.getElementById('gPppoeUser');
+        if (idEl)   { idEl.value = parsedId;   idEl.dataset.prevId = parsedId;   idEl.style.borderColor = '#22d3ee'; setTimeout(() => { idEl.style.borderColor = ''; }, 800); }
+        if (userEl) { userEl.value = parsedId; userEl.style.borderColor = '#22d3ee'; setTimeout(() => { userEl.style.borderColor = ''; }, 800); }
 
         // Re-generate script
         gponRender();
