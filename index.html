@@ -2649,7 +2649,7 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
         if (badge) badge.textContent = (e === 'UNR_C600') ? 'C600' : 'C300';
 
         gponRender();
-        gponRenderHub();
+        // gponRenderHub sudah dipanggil di dalam gponRender()
     }
 
     // Sync PPPoE User dengan ID Pelanggan secara otomatis,
@@ -2773,19 +2773,19 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
 
         document.getElementById('gScriptOlt').textContent = oltScript;
         document.getElementById('gScriptMikrotik').textContent = mikrotikScript;
-        // Command Hub ikut update setiap kali form berubah
-        gponRenderHub();
+        // Command Hub ikut update, pass v langsung agar tidak panggil gponVals() 2x
+        gponRenderHub(v);
     }
 
-    function gponRenderHub() {
+    function gponRenderHub(v) {
         const hub = document.getElementById('gCommandHub');
         const isC600 = _gponEntitas === 'UNR_C600';
 
-        // Ambil nilai live dari form
-        const v = gponVals();
-        const iface  = v.iface;   // e.g. "1/1/1"
-        const onuId  = v.onuId;   // e.g. "6"
-        const sn     = v.sn;      // e.g. "CDTC1DEB7D18"
+        // Terima v dari gponRender, atau ambil sendiri jika dipanggil langsung
+        if (!v) v = gponVals();
+        const iface  = v.iface;
+        const onuId  = v.onuId;
+        const sn     = v.sn;
 
         const commands = isC600 ? [
             { label: 'CEK REDAMAN 1 PORT',       cmd: `sho pon power onu-rx gpon_olt-${iface}` },
@@ -2813,15 +2813,44 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
             { label: 'GANTI MODEM (SN BARU)',     cmd: `configure terminal\ninterface gpon-onu_${iface}:${onuId}\nregistration-method sn ${sn}`, note: 'SN = serial number baru' },
         ];
 
-        hub.innerHTML = commands.map(c => `
-            <div class="space-y-1">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${c.label}</div>
-                <div class="relative">
-                    <pre data-cmd="${c.cmd.replace(/"/g,'&quot;')}" class="gpon-cmd-pre bg-slate-800/80 rounded-lg px-3 py-2 text-[11px] text-cyan-200 font-mono whitespace-pre leading-relaxed cursor-pointer transition-all select-all" style="border:1px solid #334155" onclick="gponCopyCmd(this)">${c.cmd}</pre>
-                    <span class="gpon-copied-badge absolute top-1 right-2 text-[9px] font-black text-emerald-400 opacity-0 pointer-events-none transition-opacity duration-200">✅ COPIED!</span>
-                    ${c.note ? `<div class="text-[9px] text-slate-500 mt-0.5 italic">${c.note}</div>` : ''}
-                </div>
-            </div>`).join('');
+        hub.innerHTML = '';
+        commands.forEach(c => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'space-y-1';
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'text-[9px] font-black text-slate-400 uppercase tracking-widest';
+            labelEl.textContent = c.label;
+
+            const inner = document.createElement('div');
+            inner.className = 'relative';
+
+            // <pre> dibuat via DOM agar \n dirender benar dan tidak ada HTML injection
+            const pre = document.createElement('pre');
+            pre.className = 'gpon-cmd-pre bg-slate-800/80 rounded-lg px-3 py-2 text-[11px] text-cyan-200 font-mono whitespace-pre leading-relaxed cursor-pointer transition-all select-all';
+            pre.style.border = '1px solid #334155';
+            pre.textContent = c.cmd;   // textContent: aman, \n dirender, tidak ada XSS
+            pre.addEventListener('click', () => gponCopyCmd(pre));
+
+            const badge = document.createElement('span');
+            badge.className = 'gpon-copied-badge absolute top-1 right-2 text-[9px] font-black text-emerald-400 pointer-events-none transition-opacity duration-200';
+            badge.style.opacity = '0';
+            badge.textContent = '✅ COPIED!';
+
+            inner.appendChild(pre);
+            inner.appendChild(badge);
+
+            if (c.note) {
+                const note = document.createElement('div');
+                note.className = 'text-[9px] text-slate-500 mt-0.5 italic';
+                note.textContent = c.note;
+                inner.appendChild(note);
+            }
+
+            wrapper.appendChild(labelEl);
+            wrapper.appendChild(inner);
+            hub.appendChild(wrapper);
+        });
     }
 
     function gponCopy(elId) {
@@ -2834,7 +2863,8 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
     }
 
     function gponCopyCmd(preEl) {
-        const text = preEl.dataset.cmd || preEl.textContent;
+        // textContent sudah menyimpan teks asli dengan \n yang benar (DOM-built element)
+        const text = preEl.textContent;
         navigator.clipboard.writeText(text.trim()).then(() => {
             // Flash border cyan
             preEl.style.borderColor = '#22d3ee';
@@ -2858,11 +2888,8 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
         });
     }
 
-    // Init on open
-    document.addEventListener('DOMContentLoaded', () => {
-        gponRender();
-        gponRenderHub();
-    });
+    // Init: gponRender dipanggil pertama kali dari openGpon → gponSetEntitas → gponRender
+    // Tidak perlu DOMContentLoaded karena form ada di DOM sejak halaman load
     </script>
 
 </body>
