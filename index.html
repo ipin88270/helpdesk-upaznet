@@ -2773,37 +2773,44 @@ add name=${v.user} password=${v.pass} profile=${v.paket} service=pppoe comment="
 
         document.getElementById('gScriptOlt').textContent = oltScript;
         document.getElementById('gScriptMikrotik').textContent = mikrotikScript;
+        // Command Hub ikut update setiap kali form berubah
+        gponRenderHub();
     }
 
     function gponRenderHub() {
         const hub = document.getElementById('gCommandHub');
         const isC600 = _gponEntitas === 'UNR_C600';
 
-        // Commands differ slightly between C600 and C300
+        // Ambil nilai live dari form
+        const v = gponVals();
+        const iface  = v.iface;   // e.g. "1/1/1"
+        const onuId  = v.onuId;   // e.g. "6"
+        const sn     = v.sn;      // e.g. "CDTC1DEB7D18"
+
         const commands = isC600 ? [
-            { label: 'CEK REDAMAN 1 PORT',       cmd: 'sho pon power onu-rx gpon_olt-1/4/2',               note: 'sesuaikan interface' },
-            { label: 'CEK REDAMAN PELANGGAN',     cmd: 'sho pon power attenuation gpon_onu-1/4/9:10',       note: 'interface & no onu sesuaikan' },
-            { label: 'REBOOT MODEM',              cmd: 'conf t\npon-onu-mng gpon_onu-1/4/2:1\nreboot',      note: '' },
-            { label: 'HAPUS ONU',                 cmd: 'conf t\ninterface gpon_olt-1/4/2\nno onu 1',        note: '' },
-            { label: 'AKTIVASI PORT OLT',         cmd: 'conf t\ninterface gpon_olt-1/4/2\nno shutdown',     note: '' },
-            { label: 'CEK STATUS 1 PORT',         cmd: 'sho gpon onu state gpon_olt-1/4/2',                 note: 'sesuaikan interface' },
-            { label: 'CEK SN BELUM CONFIG',       cmd: 'sho pon onu un',                                    note: '' },
-            { label: 'DETAIL INFO PELANGGAN',     cmd: 'sho gpon onu detail-info gpon_onu-1/4/2:1',         note: 'sesuaikan interface & no onu' },
-            { label: 'CEK DETAIL WAN',            cmd: 'show gpon remote-onu wan-ip gpon_onu-1/4/2:1',      note: 'sesuaikan interface' },
-            { label: 'CEK INTERFACE BERDASAR SN', cmd: 'sho gpon onu by-sn ZTEGD2327302',                   note: 'ganti SN' },
+            { label: 'CEK REDAMAN 1 PORT',       cmd: `sho pon power onu-rx gpon_olt-${iface}` },
+            { label: 'CEK REDAMAN PELANGGAN',     cmd: `sho pon power attenuation gpon_onu-${iface}:${onuId}` },
+            { label: 'REBOOT MODEM',              cmd: `conf t\npon-onu-mng gpon_onu-${iface}:${onuId}\nreboot` },
+            { label: 'HAPUS ONU',                 cmd: `conf t\ninterface gpon_olt-${iface}\nno onu ${onuId}` },
+            { label: 'AKTIVASI PORT OLT',         cmd: `conf t\ninterface gpon_olt-${iface}\nno shutdown` },
+            { label: 'CEK STATUS 1 PORT',         cmd: `sho gpon onu state gpon_olt-${iface}` },
+            { label: 'CEK SN BELUM CONFIG',       cmd: `sho pon onu un` },
+            { label: 'DETAIL INFO PELANGGAN',     cmd: `sho gpon onu detail-info gpon_onu-${iface}:${onuId}` },
+            { label: 'CEK DETAIL WAN',            cmd: `show gpon remote-onu wan-ip gpon_onu-${iface}:${onuId}` },
+            { label: 'CEK INTERFACE BERDASAR SN', cmd: `sho gpon onu by-sn ${sn}` },
         ] : [
-            { label: 'CEK REDAMAN 1 PORT',        cmd: 'show pon power onu-rx gpon-olt_1/4/16',             note: 'sesuaikan interface' },
-            { label: 'CEK REDAMAN PELANGGAN',     cmd: 'show pon power attenuation gpon-onu_1/1/3:8',       note: 'interface & no onu sesuaikan' },
-            { label: 'REBOOT MODEM',              cmd: 'configure terminal\npon-onu-mng gpon-onu_1/2/3:13\nreboot', note: '' },
-            { label: 'HAPUS ONU',                 cmd: 'configure terminal\ninterface gpon-olt_1/1/4\nno onu 67', note: '' },
-            { label: 'AKTIVASI PORT OLT',         cmd: 'configure terminal\ninterface gpon-olt_1/4/16\nno shutdown', note: '' },
-            { label: 'CEK STATUS 1 PORT',         cmd: 'show gpon onu state gpon-olt_1/1/8',                note: 'sesuaikan interface' },
-            { label: 'CEK SN BELUM CONFIG',       cmd: 'show gpon onu uncfg',                               note: '' },
-            { label: 'CEK INTERFACE PELANGGAN',   cmd: 'show run interface gpon-onu_1/2/3:13',              note: 'sesuaikan interface & no onu' },
-            { label: 'CEK WAN PELANGGAN',         cmd: 'show onu running config gpon-onu_1/2/3:13',         note: 'sesuaikan interface' },
-            { label: 'DETAIL INFO PELANGGAN',     cmd: 'show gpon onu detail-info gpon-onu_1/1/3:13',       note: 'sesuaikan interface & no onu' },
-            { label: 'CEK INTERFACE BERDASAR SN', cmd: 'show gpon onu by sn CDTC50193615',                  note: 'ganti SN' },
-            { label: 'GANTI MODEM (SN BARU)',     cmd: 'configure terminal\ninterface gpon-onu_1/3/7:21\nregistration-method sn HWTCDF6F0488', note: 'interface lama & SN baru' },
+            { label: 'CEK REDAMAN 1 PORT',        cmd: `show pon power onu-rx gpon-olt_${iface}` },
+            { label: 'CEK REDAMAN PELANGGAN',     cmd: `show pon power attenuation gpon-onu_${iface}:${onuId}` },
+            { label: 'REBOOT MODEM',              cmd: `configure terminal\npon-onu-mng gpon-onu_${iface}:${onuId}\nreboot` },
+            { label: 'HAPUS ONU',                 cmd: `configure terminal\ninterface gpon-olt_${iface}\nno onu ${onuId}` },
+            { label: 'AKTIVASI PORT OLT',         cmd: `configure terminal\ninterface gpon-olt_${iface}\nno shutdown` },
+            { label: 'CEK STATUS 1 PORT',         cmd: `show gpon onu state gpon-olt_${iface}` },
+            { label: 'CEK SN BELUM CONFIG',       cmd: `show gpon onu uncfg` },
+            { label: 'CEK INTERFACE PELANGGAN',   cmd: `show run interface gpon-onu_${iface}:${onuId}` },
+            { label: 'CEK WAN PELANGGAN',         cmd: `show onu running config gpon-onu_${iface}:${onuId}` },
+            { label: 'DETAIL INFO PELANGGAN',     cmd: `show gpon onu detail-info gpon-onu_${iface}:${onuId}` },
+            { label: 'CEK INTERFACE BERDASAR SN', cmd: `show gpon onu by sn ${sn}` },
+            { label: 'GANTI MODEM (SN BARU)',     cmd: `configure terminal\ninterface gpon-onu_${iface}:${onuId}\nregistration-method sn ${sn}`, note: 'SN = serial number baru' },
         ];
 
         hub.innerHTML = commands.map(c => `
