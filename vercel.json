@@ -1,8 +1,17 @@
 {
-  "rewrites": [
-    { "source": "/analyze_groq.php",  "destination": "/api/analyze_groq" },
-    { "source": "/diag/download",     "destination": "/api/diag/download" },
-    { "source": "/diag/log",          "destination": "/api/diag/log" },
-    { "source": "/diag/logs",         "destination": "/api/diag/logs" }
+  "version": 2,
+  "builds": [
+    { "src": "index.html",   "use": "@vercel/static" },
+    { "src": "images/**",    "use": "@vercel/static" },
+    { "src": "api/**/*.js",  "use": "@vercel/node"   }
+  ],
+  "routes": [
+    { "src": "/analyze_groq\\.php", "dest": "/api/analyze_groq"    },
+    { "src": "/api/ssh",            "dest": "/api/ssh"              },
+    { "src": "/diag/download",      "dest": "/api/diag/download"    },
+    { "src": "/diag/log",           "dest": "/api/diag/log"         },
+    { "src": "/diag/logs",          "dest": "/api/diag/logs"        },
+    { "src": "/images/(.*)",        "dest": "/images/$1"            },
+    { "src": "/(.*)",               "dest": "/index.html"           }
   ]
 }
