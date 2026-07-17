@@ -243,47 +243,57 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    if (parsedUrl.pathname === '/api/ssh' && req.method === 'POST') {
+    if (parsedUrl.pathname === '/api/ssh') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        if (req.method === 'OPTIONS') {
+            res.writeHead(204);
+            res.end();
+            return;
+        }
+        if (req.method !== 'POST') {
+            res.writeHead(405, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Method not allowed' }));
+            return;
+        }
+
         let body = '';
         req.on('data', chunk => body += chunk.toString());
         req.on('end', () => {
             try {
                 const payload = JSON.parse(body || '{}');
                 const { ip, user, pass } = payload;
-                if (!ip || !user || !pass) {
+                if (!ip) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
                     return res.end(JSON.stringify({ ok: false, error: 'Invalid data' }));
                 }
 
                 const { exec } = require('child_process');
-                const os = require('os');
-                const uniqueId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-                const vbsPath = path.join(os.tmpdir(), `ssh_auto_${uniqueId}.vbs`);
+                const safeIp = ip.replace(/['"]/g, '');
+                const safeUser = (user || '').replace(/['"]/g, '');
+                const safePass = (pass || '').replace(/['"]/g, '');
 
-                // Escape special VBScript/SendKeys characters in the password:
-                // SendKeys treats +^%~{}[]() as special — wrap each in braces to send literally
-                const escapedPass = pass.replace(/([+^%~{}()[\]])/g, '{$1}');
-                // Escape double-quotes in ip/user for the Run string (strip any that sneak in)
-                const safeIp   = ip.replace(/['"]/g, '');
-                const safeUser = user.replace(/['"]/g, '');
+                const puttyPath = 'C:\\Program Files\\PuTTY\\putty.exe';
+                const usePutty = fs.existsSync(puttyPath);
 
-                // VBScript to open CMD, run SSH, wait, and send password
-                const vbsScript = `Set WshShell = WScript.CreateObject("WScript.Shell")
-WshShell.Run "cmd /k ssh ${safeUser}@${safeIp}", 1, False
-WScript.Sleep 3000
-WshShell.AppActivate "cmd"
-WScript.Sleep 500
-WshShell.SendKeys "${escapedPass}"
-WshShell.SendKeys "{ENTER}"
-`;
-                fs.writeFileSync(vbsPath, vbsScript);
-                
-                exec(`wscript "${vbsPath}"`, (err) => {
-                    // Clean up temp file after script finishes
-                    setTimeout(() => {
-                        fs.unlink(vbsPath, () => {});
-                    }, 8000);
-                });
+                if (usePutty) {
+                    const args = ['-telnet', safeIp, '-P', '23'];
+                    if (safeUser) args.push('-l', safeUser);
+
+                    const { execFile } = require('child_process');
+                    execFile(puttyPath, args, (err) => {
+                        if (err) {
+                            console.error('PuTTY launch failed:', err);
+                        }
+                    });
+                } else {
+                    exec(`cmd /c start "" telnet ${safeIp}`, (err) => {
+                        if (err) {
+                            console.error('Telnet launch failed:', err);
+                        }
+                    });
+                }
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: true }));

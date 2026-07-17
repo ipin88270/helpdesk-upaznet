@@ -626,12 +626,12 @@
             <!-- Tabs -->
             <div class="flex gap-2 border-b border-slate-700 mb-3 pb-2 shrink-0">
                 <button onclick="switchOltTab('ssh')" id="tabBtn-ssh"
-                    class="px-3 py-1 text-xs font-bold rounded bg-cyan-600 text-white">Config OLT (SSH)</button>
+                    class="px-3 py-1 text-xs font-bold rounded bg-cyan-600 text-white">Config OLT (Telnet)</button>
                 <button onclick="switchOltTab('web')" id="tabBtn-web"
                     class="px-3 py-1 text-xs font-bold rounded bg-slate-800 text-slate-400">Web Remote</button>
             </div>
 
-            <!-- Tab Content: SSH -->
+            <!-- Tab Content: Telnet -->
             <div id="tabContent-ssh"
                 class="overflow-y-auto flex-1 text-sm bg-slate-950 border border-slate-700 rounded-lg">
                 <table class="w-full text-left border-collapse">
@@ -1389,7 +1389,7 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
                     <td class="p-2 text-slate-400">${escapeHtml(d.entitas)}</td>
                     <td class="p-2">
                         <button onclick="connectConfigOlt('${d.ip}', '${d.user}', '${d.pass}')" 
-                            class="text-cyan-400 hover:text-cyan-300 underline font-mono font-bold" title="Click to auto-connect via SSH">
+                            class="text-cyan-400 hover:text-cyan-300 underline font-mono font-bold" title="Click to auto-connect via Telnet">
                             ${escapeHtml(d.ip)}
                         </button>
                     </td>
@@ -1403,9 +1403,10 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
 
 
         async function connectConfigOlt(ip, user, pass) {
-            console.log(`Connecting to ${ip} as ${user}...`);
+            console.log(`Connecting to ${ip} as ${user} using Telnet...`);
+            const localApi = 'http://127.0.0.1:8000/api/ssh';
             try {
-                const res = await fetch('/api/ssh', {
+                const res = await fetch(localApi, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ip, user, pass })
@@ -1413,69 +1414,66 @@ Format output harus berupa JSON valid seperti ini tanpa teks pengantar tambahan 
 
                 const contentType = res.headers.get('content-type') || '';
                 if (!contentType.includes('application/json')) {
-                    // Response bukan JSON (HTML error page) — langsung buka SSH client
-                    openSshClient(ip, user, pass);
+                    showTelnetPanel(ip, user, pass, 'PuTTY/Telnet command sent locally.');
                     return;
                 }
 
                 const result = await res.json();
                 if (result.ok) {
-                    // Local server.js berhasil buka CMD + VBScript — selesai
-                    console.log('SSH launched via local server.js');
+                    showTelnetPanel(ip, user, pass, 'PuTTY launch command sent to local server.');
+                    console.log('Telnet session launched via local server.js');
                 } else {
-                    // Vercel / server tidak support SSH otomatis — buka SSH client di browser
-                    openSshClient(ip, user, pass);
+                    showTelnetPanel(ip, user, pass, 'Local server responded but could not launch PuTTY.');
                 }
             } catch (err) {
-                openSshClient(ip, user, pass);
+                showTelnetPanel(ip, user, pass, 'Local server unavailable; use the manual Telnet command below.');
             }
         }
 
-        // Coba buka SSH langsung via URI scheme ssh:// (Windows Terminal / PuTTY terinstall)
-        // Jika browser memblokir, tampilkan panel kredensial dengan tombol copy
-        function openSshClient(ip, user, pass) {
-            // 1. Coba launch ssh:// URI — Windows Terminal / OpenSSH akan menangkap ini
-            const launched = window.open(`ssh://${encodeURIComponent(user)}@${ip}`, '_self');
-
-            // 2. Selalu tampilkan panel SSH sekalian agar user bisa copy password
-            showSshPanel(ip, user, pass);
+        // Fallback: bila server lokal tidak tersedia, tetap tampilkan panel bantuannya.
+        function openTelnetClient(ip, user, pass) {
+            showTelnetPanel(ip, user, pass, 'Local server unavailable; use the manual Telnet command below.');
         }
 
-        function showSshPanel(ip, user, pass) {
-            // Tampilkan modal SSH di halaman yang sama — tidak perlu tab baru
-            // Hapus panel lama jika ada
-            const existing = document.getElementById('sshQuickPanel');
+        function launchPuttyAutoLogin(ip, user, pass) {
+            console.log(`Launching PuTTY auto-login to ${ip}`);
+            connectConfigOlt(ip, user, pass);
+        }
+
+        function showTelnetPanel(ip, user, pass, message = '') {
+            const existing = document.getElementById('telnetQuickPanel');
             if (existing) existing.remove();
 
             const panel = document.createElement('div');
-            panel.id = 'sshQuickPanel';
-            panel.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;width:340px;background:#0f172a;border:1px solid #22d3ee;border-radius:14px;padding:18px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.6);font-family:sans-serif;color:#e2e8f0';
+            panel.id = 'telnetQuickPanel';
+            panel.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;width:360px;background:#0f172a;border:1px solid #22d3ee;border-radius:14px;padding:18px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.6);font-family:sans-serif;color:#e2e8f0';
             panel.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                    <span style="font-weight:800;font-size:13px;color:#22d3ee">🔌 SSH — ${escapeHtml(ip)}</span>
-                    <button onclick="document.getElementById('sshQuickPanel').remove()" style="background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1">✕</button>
+                    <span style="font-weight:800;font-size:13px;color:#22d3ee">🔌 Telnet — ${escapeHtml(ip)}</span>
+                    <button onclick="document.getElementById('telnetQuickPanel').remove()" style="background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1">✕</button>
                 </div>
+                ${message ? `<div style="padding:10px 12px;margin-bottom:12px;border:1px solid #1e3a5f;border-radius:10px;background:#031926;color:#cde7f4;font-size:12px">${escapeHtml(message)}</div>` : ''}
                 <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px">
                     <tr><td style="padding:5px 8px;color:#94a3b8;width:60px">Host</td><td style="padding:5px 8px;font-family:monospace;color:#e2e8f0">${escapeHtml(ip)}</td></tr>
                     <tr><td style="padding:5px 8px;color:#94a3b8">User</td><td style="padding:5px 8px;font-family:monospace;color:#e2e8f0">${escapeHtml(user)}</td></tr>
                     <tr>
                         <td style="padding:5px 8px;color:#94a3b8">Pass</td>
                         <td style="padding:5px 8px;font-family:monospace;color:#fbbf24;display:flex;align-items:center;gap:8px">
-                            <span id="sshPassVal">${escapeHtml(pass)}</span>
+                            <span id="telnetPassVal">${escapeHtml(pass)}</span>
                             <button onclick="navigator.clipboard.writeText('${escapeHtml(pass)}').then(()=>{this.textContent='✅';setTimeout(()=>this.textContent='Copy',1500)})" style="background:#1e3a5f;border:1px solid #334155;color:#7dd3fc;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer">Copy</button>
                         </td>
                     </tr>
                 </table>
                 <div style="display:flex;flex-direction:column;gap:8px">
-                    <button onclick="window.open('ssh://${encodeURIComponent(user)}@${ip}','_self')" style="background:#0e7490;border:none;color:#fff;padding:9px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-                        <span>⚡</span> Buka SSH Client (ssh://)
+                    <button onclick="launchPuttyAutoLogin('${escapeHtml(ip)}','${escapeHtml(user)}','${escapeHtml(pass)}')" style="background:#0e7490;border:none;color:#fff;padding:9px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+                        <span>⚡</span> Buka PuTTY & Auto-Login
                     </button>
-                    <button onclick="navigator.clipboard.writeText('ssh ${escapeHtml(user)}@${ip}').then(()=>{this.textContent='✅ Tersalin!';setTimeout(()=>{this.textContent='📋 Copy Command: ssh ${escapeHtml(user)}@${ip}'},1500)})" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:7px;border-radius:8px;font-size:11px;cursor:pointer">
-                        📋 Copy Command: ssh ${escapeHtml(user)}@${ip}
+                    <button onclick="navigator.clipboard.writeText('telnet ${escapeHtml(ip)}').then(()=>{this.textContent='✅ Tersalin!';setTimeout(()=>{this.textContent='📋 Copy Command: telnet ${escapeHtml(ip)}'},1500)})" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:7px;border-radius:8px;font-size:11px;cursor:pointer">
+                        📋 Copy Command: telnet ${escapeHtml(ip)}
                     </button>
                     <a href="http://${ip}/" target="_blank" style="background:#164e63;color:#7dd3fc;padding:7px;border-radius:8px;font-size:11px;text-align:center;text-decoration:none;font-weight:600">🌐 Buka Web Interface</a>
                 </div>
-                <p style="margin-top:10px;font-size:10px;color:#475569;line-height:1.5">SSH otomatis (CMD) aktif saat server.js berjalan lokal.<br>Klik "Buka SSH Client" untuk membuka via Windows Terminal / PuTTY.</p>`;
+                <p style="margin-top:10px;font-size:10px;color:#475569;line-height:1.5">Session Telnet otomatis (CMD) aktif saat server.js berjalan lokal.<br>Gunakan tombol di atas untuk membuka koneksi telnet.</p>`;
             document.body.appendChild(panel);
         }
 

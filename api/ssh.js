@@ -1,5 +1,5 @@
-// Vercel serverless — SSH auto-connect stub
-// The SSH feature uses Windows VBScript + child_process and cannot run on Vercel.
+// Vercel serverless — Telnet auto-connect stub
+// The Telnet feature uses Windows CMD + VBScript and cannot run on Vercel.
 // Returns a clear error so the frontend shows a useful message instead of hanging.
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,6 +10,6 @@ export default function handler(req, res) {
 
     res.status(501).json({
         ok: false,
-        error: 'SSH auto-connect is only available when running the local server.js. On Vercel, use your SSH client directly with the credentials shown in the OLT table.'
+        error: 'PuTTY/Telnet auto-connect is only available when running the local server.js. On Vercel, use your PuTTY client directly with the credentials shown in the OLT table.'
     });
 }
